@@ -4,3 +4,5 @@ data/foto-personali.json
 data/probabili.json
 .next
 node_modules
+.env*
+.vercel

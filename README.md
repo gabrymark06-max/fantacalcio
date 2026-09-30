@@ -118,9 +118,11 @@ I log finiscono in `logs/`.
 
 ## Pubblicazione
 
-1. Crea un repository **privato** su GitHub e collegalo: `git remote add origin <url>` e `git push -u origin main`.
-2. Su Vercel: *Add New Project* → importa il repository → **Root Directory: `web`** → Deploy.
-3. Da lì ogni push di `aggiorna.ps1` aggiorna il sito da solo.
+Il sito è su Vercel (progetto `fantacalcio`, cartella `web` collegata con `vercel link`):
+`cd web && vercel deploy --prod`. `scripts/aggiorna.ps1` lo ripubblica da solo dopo ogni
+aggiornamento. `web/.vercelignore` esclude i file che restano solo sul proprio PC (foto di
+Transfermarkt, probabili formazioni e loghi di SOS Fanta): online le formazioni sono stimate
+dal modello e le foto sono quelle di Wikimedia Commons.
 
 ## Regole sui dati
 

@@ -1,7 +1,9 @@
 # Aggiornamento automatico: dati freschi, previsioni, accuratezza, pubblicazione.
 #
 # Esegue la pipeline Python; se i file del sito (web/data) sono cambiati li salva in un
-# commit e, se esiste un remote "origin", li invia: il deploy del sito parte da solo.
+# commit, li invia a GitHub (remote "origin") e ripubblica il sito su Vercel se la cartella
+# web è collegata a un progetto (web/.vercel, creata da "vercel link"). I file che restano
+# solo sul proprio PC sono esclusi da git e da web/.vercelignore.
 # Pensato per l'Utilità di pianificazione di Windows (vedi README), funziona anche a mano:
 #     powershell -ExecutionPolicy Bypass -File scripts\aggiorna.ps1
 
@@ -33,9 +35,19 @@ try {
     if ($remote -contains "origin") {
         git push origin HEAD
         if ($LASTEXITCODE -ne 0) { throw "Push fallito: le previsioni restano solo in locale." }
-        Write-Output "Pubblicato: il sito si aggiornerà con il prossimo deploy."
+        Write-Output "Inviato a GitHub."
     } else {
         Write-Output "Nessun remote 'origin': commit fatto solo in locale."
+    }
+
+    if (Test-Path (Join-Path $root "web/.vercel")) {
+        Push-Location (Join-Path $root "web")
+        try {
+            vercel deploy --prod --yes
+            if ($LASTEXITCODE -ne 0) { throw "Deploy su Vercel fallito: il sito online resta alla versione precedente." }
+            Write-Output "Sito online aggiornato."
+        }
+        finally { Pop-Location }
     }
 }
 finally {
