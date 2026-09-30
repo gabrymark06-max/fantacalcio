@@ -67,7 +67,8 @@ export function codificaImport(dati: DatiLeghe): string {
 }
 
 export interface Nota {
-  tipo: "ok" | "controlla";
+  /** ok: letto bene; info: solo per sapere; controlla: da verificare a mano. */
+  tipo: "ok" | "info" | "controlla";
   testo: string;
 }
 
@@ -206,8 +207,8 @@ export function regoleDaLeghe(imp: DatiLeghe["impostazioni"], base: Regole = REG
     }
     if (nonPrevisti.length) {
       note.push({
-        tipo: "controlla",
-        testo: `Bonus che non possiamo prevedere (i voti storici non dicono quali gol sono decisivi): ${nonPrevisti.join(", ")}. Premiano comunque chi segna, cioè gli stessi giocatori che il modello già valuta per i gol: per questo li trascuriamo.`,
+        tipo: "info",
+        testo: `Non contati: ${nonPrevisti.join(", ")} (non si possono prevedere, e premiano comunque chi già segna).`,
       });
     }
     note.push({ tipo: "ok", testo: "Bonus e malus importati dalla lega." });
@@ -238,7 +239,7 @@ export function regoleDaLeghe(imp: DatiLeghe["impostazioni"], base: Regole = REG
   const altri = campiModificatori(calcolo).filter((k) => k !== "smodd" && k !== "stbdf");
   if (altri.length) {
     note.push({
-      tipo: "controlla",
+      tipo: "info",
       testo: `Non ancora calcolati: ${altri.map((k) => MODIFICATORI_NON_GESTITI[k] ?? k).join(", ")}.`,
     });
   }

@@ -187,7 +187,8 @@ function RiepilogoImport({ origine }: { origine: NonNullable<LegaSalvata["origin
       </p>
       <ul className="note-import">
         {origine.note.map((n, i) => (
-          <li key={i} className={n.tipo === "ok" ? "nota-ok" : "nota-controlla"}>
+          <li key={i} className={`nota-${n.tipo}`}>
+            {n.tipo === "controlla" && <span className="da-controllare">Da controllare</span>}
             {n.testo}
           </li>
         ))}

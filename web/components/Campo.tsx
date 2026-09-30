@@ -11,19 +11,23 @@ import { fantavotoRegole } from "@/lib/rules";
 import { NOMI_RUOLO, type Giocatore, type Ruolo } from "@/lib/types";
 
 /** Dall'alto in basso: attacco, centrocampo, difesa, porta. */
-const RIGHE: Ruolo[] = ["A", "C", "D", "P"];
+export const RIGHE: Ruolo[] = ["A", "C", "D", "P"];
 
 /** Figurina sul campo: stesso formato dei ritratti di Transfermarkt (300×390), che entrano interi. */
 const FORMATO_FIGURINA = 1.3;
 
-export function Faccia({ g, grande = false }: { g: Giocatore; grande?: boolean }) {
+/** piccola: cerchio negli elenchi; media e grande: figurina (scambi e campo). */
+export type TagliaFaccia = "piccola" | "media" | "grande";
+
+export function Faccia({ g, grande = false, taglia }: { g: Giocatore; grande?: boolean; taglia?: TagliaFaccia }) {
   const [errore, setErrore] = useState(false);
   const f = foto[String(g.id)];
+  const t = taglia ?? (grande ? "grande" : "piccola");
   return (
-    <span className={`faccia faccia-${g.ruolo}${grande ? " grande" : ""}`} aria-hidden="true">
+    <span className={`faccia faccia-${g.ruolo}${t === "piccola" ? "" : ` ${t}`}`} aria-hidden="true">
       {f && !errore ? (
         // eslint-disable-next-line @next/next/no-img-element -- immagine esterna, niente ottimizzazione
-        <img src={f.url} alt="" loading="lazy" decoding="async" style={ritaglio(f, grande ? FORMATO_FIGURINA : 1)} onError={() => setErrore(true)} />
+        <img src={f.url} alt="" loading="lazy" decoding="async" style={ritaglio(f, t === "piccola" ? 1 : FORMATO_FIGURINA)} onError={() => setErrore(true)} />
       ) : (
         <span className="iniziali">{iniziali(g.nome)}</span>
       )}
@@ -74,18 +78,24 @@ function Pedina({ g, ctx }: { g: Giocatore; ctx: Contesto }) {
 }
 
 /** Il campo con i titolari disposti secondo il modulo. */
+export function LineeCampo() {
+  return (
+    <svg className="linee-campo" viewBox="0 0 68 105" preserveAspectRatio="none" aria-hidden="true">
+      <rect x="1.5" y="1.5" width="65" height="102" />
+      <line x1="1.5" y1="52.5" x2="66.5" y2="52.5" />
+      <circle cx="34" cy="52.5" r="9.15" />
+      <rect x="13.84" y="1.5" width="40.32" height="16.5" />
+      <rect x="24.84" y="1.5" width="18.32" height="5.5" />
+      <rect x="13.84" y="87" width="40.32" height="16.5" />
+      <rect x="24.84" y="98" width="18.32" height="5.5" />
+    </svg>
+  );
+}
+
 export function Campo({ formazione, ctx }: { formazione: Formazione; ctx: Contesto }) {
   return (
     <div className="campo-da-gioco" role="group" aria-label={`Formazione ${formazione.modulo}`}>
-      <svg className="linee-campo" viewBox="0 0 68 105" preserveAspectRatio="none" aria-hidden="true">
-        <rect x="1.5" y="1.5" width="65" height="102" />
-        <line x1="1.5" y1="52.5" x2="66.5" y2="52.5" />
-        <circle cx="34" cy="52.5" r="9.15" />
-        <rect x="13.84" y="1.5" width="40.32" height="16.5" />
-        <rect x="24.84" y="1.5" width="18.32" height="5.5" />
-        <rect x="13.84" y="87" width="40.32" height="16.5" />
-        <rect x="24.84" y="98" width="18.32" height="5.5" />
-      </svg>
+      <LineeCampo />
       {RIGHE.map((r) => (
         <ol key={r} className={`linea linea-${r}`} aria-label={NOMI_RUOLO[r]}>
           {formazione.titolari

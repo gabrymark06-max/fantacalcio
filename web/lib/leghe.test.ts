@@ -54,7 +54,7 @@ test("bonus e malus di Leghe Fantacalcio diventano le nostre regole", () => {
 test("quello che non è certo viene segnalato, non indovinato", () => {
   const calcolo = { ...calcoloEsempio, bnMls: { ...calcoloEsempio.bnMls, bmgs: [3, 4.5], bmasf: [0.5, 0.5], bmdg: [1, 1] }, smoddf: { x: 1 } };
   const { regole, note } = regoleDaLeghe({ calcolo, formazione: null, ruoli: null });
-  const testi = note.filter((n) => n.tipo === "controlla").map((n) => n.testo).join(" | ");
+  const testi = note.filter((n) => n.tipo !== "ok").map((n) => n.testo).join(" | ");
   assert.match(testi, /Bonus gol in un formato che non conosciamo/);
   assert.match(testi, /valori diversi agli assist/);
   assert.match(testi, /gol decisivo/);

@@ -773,7 +773,7 @@ thead th {
 }
 
 .accetta-bassa {
-  color: var(--penna-rossa);
+  color: var(--inchiostro-2);
 }
 
 .valore-stagione {
@@ -829,8 +829,19 @@ thead th {
   font-size: 0.9rem;
 }
 
-.nota-controlla {
-  color: var(--penna-rossa);
+.nota-info {
+  color: var(--inchiostro-2);
+}
+
+.da-controllare {
+  display: inline-block;
+  margin-right: 0.4rem;
+  padding: 0 0.35rem;
+  border-radius: 0.2rem;
+  background: var(--evidenziatore);
+  color: var(--su-giallo);
+  font-size: 0.75rem;
+  font-weight: 700;
 }
 
 .grezzo {
@@ -1070,4 +1081,454 @@ thead th {
   columns: 18rem;
   column-gap: 1.5rem;
   padding-left: 1.1rem;
+}
+
+/* ---------- Banco degli scambi: mia rosa · analisi · altra rosa ---------- */
+
+.faccia.media {
+  width: 3rem;
+  height: calc(3rem * 1.3);
+  border-radius: 0.4rem;
+  border-width: 2px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+}
+
+.banco-scambi {
+  /* più largo del testo della pagina: tre colonne affiancate */
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100vw - 3rem, 92rem);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+  margin-bottom: 2rem;
+}
+
+.colonna-squadra,
+.analisi {
+  background: var(--carta-2);
+  border: 1px solid var(--riga);
+  border-radius: 0.8rem;
+  padding: 0.9rem;
+}
+
+.colonna-squadra {
+  display: grid;
+  gap: 0.75rem;
+}
+
+select.scelta-squadra {
+  width: 100%;
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  font-size: 1.15rem;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--carta-2);
+  background: var(--inchiostro);
+  border-color: var(--inchiostro);
+}
+
+.vassoio {
+  border: 2px dashed var(--riga);
+  border-radius: 0.6rem;
+  padding: 0.5rem 0.6rem 0.6rem;
+  text-align: center;
+}
+
+.vassoio-titolo {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  font-size: 1.05rem;
+  text-transform: uppercase;
+}
+
+.colonna-cedi .vassoio-titolo::after { content: " »"; }
+.colonna-ricevi .vassoio-titolo::before { content: "« "; }
+
+.vassoio-vuoto {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--inchiostro-2);
+}
+
+.vassoio-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+button.gettone-scelto {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 0;
+  padding: 0.2rem 0.6rem 0.2rem 0.2rem;
+  border-radius: 999px;
+  color: var(--su-giallo);
+  background: var(--evidenziatore);
+  border-color: var(--evidenziatore);
+}
+
+.mini-campo {
+  position: relative;
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.75rem 0.25rem;
+  border-radius: 0.6rem;
+  overflow: hidden;
+  background: repeating-linear-gradient(to bottom, var(--prato) 0 12.5%, var(--prato-2) 12.5% 25%);
+}
+
+.mini-linea,
+.mini-panchina {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.mini-panchina {
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem 0.1rem;
+}
+
+.panchina-titolo {
+  margin: 0.25rem 0 0;
+  text-align: center;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--inchiostro-2);
+}
+
+button.gettone {
+  display: grid;
+  justify-items: center;
+  gap: 0.2rem;
+  width: 4.3rem;
+  min-height: 0;
+  padding: 0.15rem 0;
+  color: inherit;
+  background: none;
+  border: 0;
+  font-weight: 600;
+}
+
+.gettone-foto {
+  position: relative;
+  display: inline-block;
+}
+
+.gettone-foto .faccia {
+  transition: transform 0.12s ease;
+}
+
+.gettone-foto .ruolo {
+  position: absolute;
+  right: -0.35rem;
+  bottom: -0.2rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  font-size: 0.65rem;
+  box-shadow: 0 0 0 2px var(--carta-2);
+}
+
+.gettone-nome {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0.05rem 0.35rem;
+  border-radius: 0.25rem;
+  font-size: 0.72rem;
+  line-height: 1.3;
+  color: #fff;
+  background: rgba(10, 20, 40, 0.75);
+}
+
+button.gettone:hover .faccia {
+  transform: translateY(-2px);
+}
+
+button.gettone[aria-pressed="true"] .faccia {
+  outline: 3px solid var(--evidenziatore);
+  outline-offset: 2px;
+}
+
+button.gettone[aria-pressed="true"] .gettone-nome {
+  color: var(--su-giallo);
+  background: var(--evidenziatore);
+}
+
+/* Analisi al centro */
+
+.analisi {
+  text-align: center;
+}
+
+button.svuota {
+  display: block;
+  margin: 0 auto 0.75rem;
+  min-height: 0;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.analisi-cuore {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.analisi-testo h2 {
+  margin: 0;
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  font-size: 1.45rem;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.analisi-buono .analisi-testo h2 {
+  display: inline;
+  padding: 0 0.2em;
+  color: var(--su-giallo);
+  background: var(--evidenziatore);
+  border-radius: 0.2em 0.6em 0.3em 0.5em;
+}
+
+.analisi-testo p {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+  color: var(--inchiostro-2);
+}
+
+.anello {
+  --tono: var(--riga);
+  position: relative;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  width: 6.4rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: conic-gradient(var(--tono) var(--quota), var(--riga) 0);
+}
+
+.anello::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  background: var(--carta-2);
+}
+
+.anello > * {
+  position: relative;
+}
+
+.anello-buono { --tono: var(--ruolo-d); }
+.anello-cattivo { --tono: var(--inchiostro-2); }
+
+.anello-valore {
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.anello-etichetta {
+  max-width: 4.6rem;
+  font-size: 0.65rem;
+  line-height: 1.15;
+  color: var(--inchiostro-2);
+}
+
+.dettagli-analisi {
+  margin-top: 0.9rem;
+  text-align: left;
+  background: var(--carta);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.dettagli-analisi summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.dettagli-analisi ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+}
+
+/* Scambi suggeriti */
+
+.suggeriti {
+  margin-top: 1.25rem;
+}
+
+.suggeriti-testa {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.suggeriti-testa h2 {
+  margin: 0;
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  font-size: 1.3rem;
+  text-transform: uppercase;
+}
+
+.suggeriti-testa button {
+  min-height: 0;
+  padding: 0.3rem 0.8rem;
+}
+
+.suggeriti .nota-piccola {
+  text-align: center;
+}
+
+.carte-scambio {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: 0.75rem;
+}
+
+button.carta-scambio {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  gap: 0.45rem;
+  align-content: start;
+  padding: 0.6rem 0.5rem;
+  color: var(--inchiostro);
+  background: var(--carta-2);
+  border: 1px solid var(--riga);
+  border-radius: 0.7rem;
+  font-weight: 400;
+  text-align: center;
+}
+
+button.carta-scambio:hover {
+  border-color: var(--inchiostro-2);
+}
+
+button.carta-scambio[aria-pressed="true"] {
+  border-color: var(--evidenziatore);
+  box-shadow: 0 0 0 2px var(--evidenziatore);
+}
+
+.carta-squadra {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--inchiostro-2);
+}
+
+.carta-corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.carta-lato {
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.carta-titolo {
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+}
+
+.carta-giocatore {
+  display: grid;
+  justify-items: center;
+  gap: 0.2rem;
+  max-width: 100%;
+}
+
+.carta-freccia {
+  font-size: 1.4rem;
+  color: var(--inchiostro-2);
+}
+
+.carta-esito {
+  font-size: 0.8rem;
+}
+
+.carta-apri {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gettone-foto .faccia {
+    transition: none;
+  }
+}
+
+@media (max-width: 64rem) {
+  .banco-scambi {
+    left: 0;
+    transform: none;
+    width: auto;
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 40rem) {
+  button.gettone {
+    width: 3.9rem;
+  }
+  .faccia.media {
+    width: 2.7rem;
+    height: calc(2.7rem * 1.3);
+  }
+  .anello {
+    width: 5.2rem;
+  }
+  .anello-valore {
+    font-size: 1.2rem;
+  }
+  .anello-etichetta {
+    max-width: 3.6rem;
+    font-size: 0.6rem;
+  }
+  .analisi-cuore {
+    gap: 0.4rem;
+  }
+  .analisi-testo h2 {
+    font-size: 1.1rem;
+  }
 }
