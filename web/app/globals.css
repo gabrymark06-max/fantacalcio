@@ -868,3 +868,176 @@ thead th {
   font-size: 0.75rem;
   vertical-align: middle;
 }
+
+/* ---------- Campo con i titolari ---------- */
+
+:root {
+  --prato: #3a7d52;
+  --prato-2: #357349;
+  --righe-campo: rgba(255, 255, 255, 0.6);
+  --pedina-testo: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --prato: #24543a;
+    --prato-2: #204c34;
+    --righe-campo: rgba(255, 255, 255, 0.4);
+  }
+}
+
+.campo-da-gioco {
+  position: relative;
+  max-width: 36rem;
+  margin: 1rem auto 1.5rem;
+  aspect-ratio: 68 / 88;
+  border-radius: 0.6rem;
+  overflow: hidden;
+  background: repeating-linear-gradient(to bottom, var(--prato) 0 12.5%, var(--prato-2) 12.5% 25%);
+  display: grid;
+  grid-template-rows: repeat(4, 1fr);
+  padding: 0.75rem 0.25rem;
+}
+
+.linee-campo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--righe-campo);
+  stroke-width: 0.35;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.linea {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.pedina {
+  display: grid;
+  justify-items: center;
+  gap: 0.15rem;
+  width: 5.5rem;
+  text-align: center;
+  color: var(--pedina-testo);
+}
+
+.pedina-nome {
+  font-weight: 700;
+  font-size: 0.8rem;
+  line-height: 1.1;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.3rem;
+  background: rgba(10, 20, 40, 0.72);
+}
+
+.pedina-dati {
+  display: flex;
+  gap: 0.35rem;
+  align-items: baseline;
+  font-size: 0.75rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.pedina-fv {
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+
+.pedina-p {
+  font-family: var(--font-dati);
+}
+
+.pedina-p.rosso,
+.pedina-nota.rosso {
+  color: #ffd2d4;
+}
+
+.pedina-nota {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.faccia {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--carta);
+  border: 2px solid var(--ruolo-c);
+}
+
+.faccia.grande {
+  width: 3.6rem;
+  height: 3.6rem;
+  border-width: 3px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.faccia-P { border-color: var(--ruolo-p); }
+.faccia-D { border-color: var(--ruolo-d); }
+.faccia-C { border-color: var(--ruolo-c); }
+.faccia-A { border-color: var(--ruolo-a); }
+
+.faccia img {
+  /* il campioncino è un busto 3:4: si ingrandisce un po' e si tiene la parte alta, dove c'è il viso */
+  width: 118%;
+  max-width: none;
+  align-self: start;
+  margin-top: 4%;
+}
+
+.faccia .iniziali {
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  color: var(--inchiostro);
+}
+
+.mini .faccia {
+  grid-area: ruolo;
+}
+
+.rimando {
+  text-align: right;
+  font-weight: 600;
+}
+
+@media (max-width: 40rem) {
+  .campo-da-gioco {
+    aspect-ratio: 68 / 100;
+    padding: 0.5rem 0;
+  }
+  .pedina {
+    width: 4.2rem;
+  }
+  .faccia.grande {
+    width: 2.8rem;
+    height: 2.8rem;
+  }
+  .pedina-nome {
+    font-size: 0.68rem;
+    /* su telefono il nome va a capo invece di essere tagliato */
+    white-space: normal;
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+}

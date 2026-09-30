@@ -25,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <nav aria-label="Sezioni">
             <Link href="/">Giornata</Link>
             <Link href="/lega">La mia lega</Link>
+            <Link href="/scambi">Scambi</Link>
             <Link href="/accuratezza">Accuratezza</Link>
             <Link href="/metodo">Metodo</Link>
           </nav>

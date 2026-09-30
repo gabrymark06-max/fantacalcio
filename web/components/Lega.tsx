@@ -1,119 +1,19 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+
+import { Campo, Faccia } from "@/components/Campo";
+import { legaEsempio, useLega, roseDellaLega, type LegaSalvata } from "@/components/legaStore";
 
 import { stato } from "@/components/Listone";
 import { conSegno, due, pct, voto } from "@/lib/format";
 import { codiceSegnalibro } from "@/lib/bookmarklet";
-import { importaRose, rosaDi, type Squadra } from "@/lib/league";
-import { decodificaImport, regoleDaLeghe, roseDaLeghe, ruoliDaLeghe, type Nota } from "@/lib/leghe";
-import { migliorFormazione, punteggio, type Contesto } from "@/lib/lineup";
+import { importaRose } from "@/lib/league";
+import { migliorFormazione, type Contesto } from "@/lib/lineup";
 import { formattaNumero, leggiNumero } from "@/lib/numbers";
 import { fantavotoRegole, REGOLE_STANDARD, TUTTI_I_MODULI, type Regole } from "@/lib/rules";
-import { contestoStagione, etichettaAccetta, suggerisciScambi, valutaScambio, type Scambio } from "@/lib/trades";
 import { NOMI_RUOLO, RUOLI, type Giocatore, type Ruolo } from "@/lib/types";
-
-const CHIAVE = "chi-schiero-lega-v2";
-/** Versione della lettura delle impostazioni di Leghe Fantacalcio: se cambia, le regole importate si ricalcolano. */
-const VERSIONE_LETTURA = 2;
-const COMPOSIZIONE: Record<Ruolo, number> = { P: 3, D: 8, C: 8, A: 6 };
-
-interface LegaSalvata {
-  squadre: Squadra[];
-  mia: string | null;
-  regole: Regole;
-  /** Ruoli diversi dal listone letti da Leghe Fantacalcio (id giocatore → ruolo). */
-  ruoli?: Record<number, Ruolo>;
-  /**
-   * Se usare quei ruoli. Spento di default: l'elenco di Leghe Fantacalcio non è sicuramente
-   * quello della lega (due leghe diverse hanno restituito lo stesso numero di voci), e con i
-   * ruoli sbagliati gli scambi proposti non rispettano la composizione delle rose.
-   */
-  usaRuoliLega?: boolean;
-  /** Presente se la lega arriva da Leghe Fantacalcio. */
-  origine?: {
-    lega: string;
-    importata: string;
-    note: Nota[];
-    fuoriListone: number;
-    impostazioni: unknown;
-    versione?: number;
-  };
-}
-
-/** Rosa con i ruoli della lega applicati. */
-function rosaLega(squadra: Squadra, perId: Map<number, Giocatore>, ruoli: Record<number, Ruolo> = {}): Giocatore[] {
-  return rosaDi(squadra, perId).map((g) => (ruoli[g.id] && ruoli[g.id] !== g.ruolo ? { ...g, ruolo: ruoli[g.id] } : g));
-}
-
-/** Se l'URL porta dati dal segnalibro, li trasforma in una lega (e pulisce l'URL). */
-function daSegnalibro(giocatori: Giocatore[], precedente: LegaSalvata | null): LegaSalvata | null {
-  if (typeof window === "undefined" || !window.location.hash.includes("importa=")) return null;
-  const dati = decodificaImport(window.location.hash);
-  window.history.replaceState(null, "", window.location.pathname);
-  if (!dati) return null;
-  const rose = roseDaLeghe(dati, giocatori);
-  const { regole, note } = regoleDaLeghe(dati.impostazioni);
-  const miaPrima = precedente?.mia && rose.squadre.some((s) => s.nome === precedente.mia) ? precedente.mia : null;
-  return {
-    squadre: rose.squadre,
-    mia: rose.mia ?? miaPrima,
-    regole,
-    ruoli: ruoliDaLeghe(dati.impostazioni.ruoli),
-    origine: {
-      lega: dati.lega.nome,
-      importata: new Date().toISOString(),
-      note,
-      fuoriListone: rose.fuoriListone,
-      impostazioni: { calcolo: dati.impostazioni.calcolo, formazione: dati.impostazioni.formazione },
-      versione: VERSIONE_LETTURA,
-    },
-  };
-}
-
-function leggi(): LegaSalvata | null {
-  try {
-    const raw = localStorage.getItem(CHIAVE);
-    if (!raw) return null;
-    const l = JSON.parse(raw) as LegaSalvata;
-    const lega = { ...l, regole: { ...REGOLE_STANDARD, ...l.regole } };
-    if (lega.origine && lega.origine.versione !== VERSIONE_LETTURA) {
-      // importata con una lettura precedente delle impostazioni: si rilegge dagli originali salvati
-      const imp = lega.origine.impostazioni as { calcolo: Record<string, unknown> | null; formazione: Record<string, unknown> | null };
-      const { regole, note } = regoleDaLeghe({ calcolo: imp?.calcolo ?? null, formazione: imp?.formazione ?? null, ruoli: null });
-      lega.regole = regole;
-      lega.origine = { ...lega.origine, note, versione: VERSIONE_LETTURA };
-      salva(lega);
-    }
-    return lega;
-  } catch {
-    return null;
-  }
-}
-
-function salva(lega: LegaSalvata | null) {
-  try {
-    if (lega) localStorage.setItem(CHIAVE, JSON.stringify(lega));
-    else localStorage.removeItem(CHIAVE);
-  } catch {
-    // archiviazione non disponibile (navigazione privata): la lega resta solo in questa pagina
-  }
-}
-
-/** Lega di esempio: 8 squadre con rose 3/8/8/6 distribuite a serpentina tra i giocatori più forti. */
-function legaEsempio(giocatori: Giocatore[]): LegaSalvata {
-  const nomi = ["Atletico Ma Non Troppo", "Real Mente", "Longobarda", "Dinamo Divano", "Sporting Lesione", "Bayern Monaco di Baviera", "Paris Saint Gennaro", "Inter Nos"];
-  const squadre = nomi.map((nome) => ({ nome, ids: [] as number[] }));
-  for (const r of RUOLI) {
-    const pool = giocatori.filter((g) => g.ruolo === r).sort((a, b) => (b.fvm ?? 0) - (a.fvm ?? 0));
-    let i = 0;
-    for (let giro = 0; giro < COMPOSIZIONE[r]; giro++) {
-      const ordine = giro % 2 === 0 ? squadre : [...squadre].reverse();
-      for (const s of ordine) s.ids.push(pool[i++].id);
-    }
-  }
-  return { squadre, mia: nomi[0], regole: REGOLE_STANDARD };
-}
 
 interface Props {
   giocatori: Giocatore[];
@@ -123,21 +23,7 @@ interface Props {
 
 export function Lega({ giocatori, giornata, sdVoto }: Props) {
   const perId = useMemo(() => new Map(giocatori.map((g) => [g.id, g])), [giocatori]);
-  const [lega, setLega] = useState<LegaSalvata | null>(null);
-  const [caricata, setCaricata] = useState(false);
-
-  useEffect(() => {
-    const salvata = leggi();
-    const importata = daSegnalibro(giocatori, salvata);
-    if (importata) salva(importata);
-    setLega(importata ?? salvata);
-    setCaricata(true);
-  }, [giocatori]);
-
-  const aggiorna = (l: LegaSalvata | null) => {
-    setLega(l);
-    salva(l);
-  };
+  const { lega, aggiorna, caricata } = useLega(giocatori);
 
   if (!caricata) return null;
   if (!lega) {
@@ -150,8 +36,7 @@ export function Lega({ giocatori, giornata, sdVoto }: Props) {
   }
 
   const ctx: Contesto = { regole: lega.regole, orizzonte: "giornata", sdVoto };
-  const mia = lega.squadre.find((s) => s.nome === lega.mia) ?? null;
-  const ruoliAttivi = lega.usaRuoliLega ? lega.ruoli : undefined;
+  const { mia } = roseDellaLega(lega, perId);
   return (
     <>
       <section className="scheda">
@@ -191,17 +76,13 @@ export function Lega({ giocatori, giornata, sdVoto }: Props) {
 
       {mia ? (
         <>
-          <Formazione rosa={rosaLega(mia, perId, ruoliAttivi)} giornata={giornata} ctx={ctx} />
-          <Scambi
-            key={JSON.stringify(lega.regole) + mia.nome + String(!!lega.usaRuoliLega)}
-            mia={rosaLega(mia, perId, ruoliAttivi)}
-            altre={lega.squadre.filter((s) => s.nome !== mia.nome).map((s) => ({ nome: s.nome, rosa: rosaLega(s, perId, ruoliAttivi) }))}
-            ctx={ctx}
-            giornateRimanenti={Math.max(1, 38 - giornata + 1)}
-          />
+          <Formazione rosa={mia} giornata={giornata} ctx={ctx} />
+          <p className="rimando">
+            <Link href="/scambi">Cerca scambi per la tua squadra →</Link>
+          </p>
         </>
       ) : (
-        <p className="vuoto">Scegli la tua squadra per vedere formazione e scambi.</p>
+        <p className="vuoto">Scegli la tua squadra per vedere la formazione.</p>
       )}
     </>
   );
@@ -643,20 +524,7 @@ function Formazione({ rosa, giornata, ctx }: { rosa: Giocatore[]; giornata: numb
         {moduloValido && automatica && automatica.atteso > f.atteso && ` (${due(automatica.atteso - f.atteso)} in meno del ${automatica.modulo})`}
         . Contano anche i cambi dalla panchina se un titolare non gioca.
       </p>
-      <div className="campo">
-        {RUOLI.map((r) => (
-          <div key={r} className="reparto">
-            <h3 className="etichetta">{NOMI_RUOLO[r]}</h3>
-            <ul>
-              {f.titolari
-                .filter((g) => g.ruolo === r)
-                .map((g) => (
-                  <GiocatoreRiga key={g.id} g={g} ctx={ctx} />
-                ))}
-            </ul>
-          </div>
-        ))}
-      </div>
+      <Campo formazione={f} ctx={ctx} />
       <h3 className="etichetta">Panchina, in ordine di ingresso</h3>
       <ul className="panchina">
         {f.panchina.map((g) => (
@@ -671,7 +539,7 @@ function GiocatoreRiga({ g, ctx }: { g: Giocatore; ctx: Contesto }) {
   const s = stato(g);
   return (
     <li className="mini">
-      <span className={`ruolo ruolo-${g.ruolo}`}>{g.ruolo}</span>
+      <Faccia g={g} />
       <span className="nome">{g.nome}</span>
       <span className="contro">
         {g.casa ? "vs" : "@"} {g.avversario}
@@ -682,168 +550,5 @@ function GiocatoreRiga({ g, ctx }: { g: Giocatore; ctx: Contesto }) {
         {voto(fantavotoRegole(g, ctx.regole, ctx.orizzonte))}
       </span>
     </li>
-  );
-}
-
-// ---------- Scambi ----------
-
-function NomiConRuolo({ giocatori }: { giocatori: Giocatore[] }) {
-  return (
-    <>
-      {giocatori.map((g, i) => (
-        <span key={g.id} className="nome-ruolo">
-          {i > 0 && " + "}
-          <span className={`ruolo ruolo-${g.ruolo}`} title={NOMI_RUOLO[g.ruolo]}>
-            {g.ruolo}
-          </span>{" "}
-          <strong>{g.nome}</strong>
-        </span>
-      ))}
-    </>
-  );
-}
-
-function PropostaScambio({ s, giornateRimanenti }: { s: Scambio; giornateRimanenti: number }) {
-  const etichetta = etichettaAccetta(s.pAccetta);
-  const diffMercato = Math.round((s.equita - 1) * 100);
-  return (
-    <li>
-      <span>
-        Cedi <NomiConRuolo giocatori={s.cedo} /> a {s.controparte}, ricevi <NomiConRuolo giocatori={s.ricevo} />
-      </span>
-      <span className="delta">
-        tu {conSegno(s.deltaMio)} a giornata (circa {conSegno(s.deltaMio * giornateRimanenti).replace(/,\d+$/, "")} punti a
-        fine stagione) · accettazione <span className={`accetta accetta-${etichetta}`}>{etichetta}</span>
-      </span>
-      <span className="motivo">
-        {s.entranoTitolari.length > 0 && (
-          <>
-            Per te: {s.entranoTitolari.map((g) => g.nome).join(", ")} {s.entranoTitolari.length > 1 ? "entrano" : "entra"} tra i
-            titolari{s.esconoTitolari.length > 0 && ` al posto di ${s.esconoTitolari.map((g) => g.nome).join(", ")}`}.{" "}
-          </>
-        )}
-        Per {s.controparte}: valore di mercato {s.fvmRicevono} contro {s.fvmCedono}
-        {diffMercato !== 0 && ` (${diffMercato > 0 ? "+" : ""}${diffMercato}% per loro, con valori pesati per qualità)`}, formazione{" "}
-        {s.deltaLoro >= 0.005 ? `migliore di ${due(s.deltaLoro)}` : s.deltaLoro <= -0.005 ? `peggiore di ${due(-s.deltaLoro)}` : "invariata"} a
-        giornata.
-      </span>
-    </li>
-  );
-}
-
-function Scambi({
-  mia,
-  altre,
-  ctx,
-  giornateRimanenti,
-}: {
-  mia: Giocatore[];
-  altre: { nome: string; rosa: Giocatore[] }[];
-  ctx: Contesto;
-  giornateRimanenti: number;
-}) {
-  const [suggeriti, setSuggeriti] = useState<Scambio[] | null>(null);
-  const [calcolo, setCalcolo] = useState(false);
-  const [controparte, setControparte] = useState(altre[0]?.nome ?? "");
-  const [cedo, setCedo] = useState<number[]>([]);
-  const [ricevo, setRicevo] = useState<number[]>([]);
-
-  const loro = altre.find((a) => a.nome === controparte)?.rosa ?? [];
-  const cedoG = mia.filter((g) => cedo.includes(g.id));
-  const ricevoG = loro.filter((g) => ricevo.includes(g.id));
-  const ruoliUguali =
-    cedoG.length > 0 && cedoG.map((g) => g.ruolo).sort().join() === ricevoG.map((g) => g.ruolo).sort().join();
-  const ctxStagione = useMemo(() => contestoStagione(ctx, [mia, loro]), [ctx, mia, loro]);
-  const valutato = ruoliUguali ? valutaScambio(mia, loro, cedoG, ricevoG, controparte, ctxStagione) : null;
-
-  const cerca = () => {
-    setCalcolo(true);
-    // lascia al browser il tempo di mostrare "Sto cercando…" prima del calcolo
-    setTimeout(() => {
-      setSuggeriti(suggerisciScambi(mia, altre, ctx));
-      setCalcolo(false);
-    }, 20);
-  };
-
-  const scegli = (lista: number[], set: (x: number[]) => void, id: number) =>
-    set(lista.includes(id) ? lista.filter((x) => x !== id) : [...lista, id]);
-  const valoreStag = (g: Giocatore) => punteggio(g, ctxStagione);
-
-  return (
-    <section className="scheda" aria-labelledby="scambi-titolo">
-      <h2 id="scambi-titolo">Scambi</h2>
-      <p>
-        Cerchiamo scambi 1 contro 1 e 2 contro 2 a ruoli invariati che alzano i punti attesi della tua
-        formazione da qui a fine stagione, con le regole della tua lega. Ne proponiamo solo se reggono anche
-        agli occhi dell&apos;altro: il valore di mercato che riceve (FVM) è almeno pari a quello che cede e la sua
-        formazione non peggiora in modo evidente.
-      </p>
-      <button type="button" onClick={cerca} disabled={calcolo || altre.length === 0}>
-        {calcolo ? "Sto cercando…" : "Cerca scambi"}
-      </button>
-      {suggeriti &&
-        (suggeriti.length === 0 ? (
-          <p className="vuoto">
-            Nessuno scambio ti fa guadagnare almeno 0,15 punti a giornata restando accettabile per l&apos;altro.
-            Prova a valutarne uno a mano qui sotto.
-          </p>
-        ) : (
-          <ol className="scambi">
-            {suggeriti.map((s, i) => (
-              <PropostaScambio key={i} s={s} giornateRimanenti={giornateRimanenti} />
-            ))}
-          </ol>
-        ))}
-
-      <h3>Valuta uno scambio</h3>
-      <label>
-        <span>Con</span>
-        <select
-          value={controparte}
-          onChange={(e) => {
-            setControparte(e.target.value);
-            setRicevo([]);
-          }}
-        >
-          {altre.map((a) => (
-            <option key={a.nome}>{a.nome}</option>
-          ))}
-        </select>
-      </label>
-      <div className="due-colonne">
-        <fieldset>
-          <legend>Cedo</legend>
-          {mia.map((g) => (
-            <label key={g.id} className="spunta">
-              <input type="checkbox" checked={cedo.includes(g.id)} onChange={() => scegli(cedo, setCedo, g.id)} />
-              <span className={`ruolo ruolo-${g.ruolo}`}>{g.ruolo}</span> {g.nome}
-              <span className="valore-stagione">{voto(valoreStag(g))}</span>
-            </label>
-          ))}
-        </fieldset>
-        <fieldset>
-          <legend>Ricevo</legend>
-          {loro.map((g) => (
-            <label key={g.id} className="spunta">
-              <input type="checkbox" checked={ricevo.includes(g.id)} onChange={() => scegli(ricevo, setRicevo, g.id)} />
-              <span className={`ruolo ruolo-${g.ruolo}`}>{g.ruolo}</span> {g.nome}
-              <span className="valore-stagione">{voto(valoreStag(g))}</span>
-            </label>
-          ))}
-        </fieldset>
-      </div>
-      <p className="nota-piccola">Accanto a ogni nome: punti attesi a giornata da qui a fine stagione.</p>
-      <div className="esito" aria-live="polite">
-        {cedoG.length === 0 && ricevoG.length === 0 ? (
-          <p>Spunta i giocatori da scambiare.</p>
-        ) : !ruoliUguali ? (
-          <p>Per mantenere la rosa valida, cedi e ricevi lo stesso numero di giocatori con gli stessi ruoli.</p>
-        ) : (
-          <ol className="scambi">
-            <PropostaScambio s={valutato!} giornateRimanenti={giornateRimanenti} />
-          </ol>
-        )}
-      </div>
-    </section>
   );
 }

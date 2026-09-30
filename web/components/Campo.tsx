@@ -1,0 +1,69 @@
+"use client";
+
+import { useState } from "react";
+
+import { stato } from "@/components/Listone";
+import { iniziali, urlFoto } from "@/lib/foto";
+import { pct, voto } from "@/lib/format";
+import type { Contesto, Formazione } from "@/lib/lineup";
+import { fantavotoRegole } from "@/lib/rules";
+import { NOMI_RUOLO, type Giocatore, type Ruolo } from "@/lib/types";
+
+/** Dall'alto in basso: attacco, centrocampo, difesa, porta. */
+const RIGHE: Ruolo[] = ["A", "C", "D", "P"];
+
+export function Faccia({ g, grande = false }: { g: Giocatore; grande?: boolean }) {
+  const [errore, setErrore] = useState(false);
+  return (
+    <span className={`faccia faccia-${g.ruolo}${grande ? " grande" : ""}`} aria-hidden="true">
+      {errore ? (
+        <span className="iniziali">{iniziali(g.nome)}</span>
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element -- immagine esterna, niente ottimizzazione
+        <img src={urlFoto(g.id)} alt="" loading="lazy" decoding="async" onError={() => setErrore(true)} />
+      )}
+    </span>
+  );
+}
+
+function Pedina({ g, ctx }: { g: Giocatore; ctx: Contesto }) {
+  const s = stato(g);
+  const fv = fantavotoRegole(g, ctx.regole, ctx.orizzonte);
+  return (
+    <li className="pedina" title={`${g.nome} (${NOMI_RUOLO[g.ruolo]}), ${g.casa ? "in casa contro" : "in trasferta contro"} ${g.avversario}`}>
+      <Faccia g={g} grande />
+      <span className="pedina-nome">{g.nome}</span>
+      <span className="pedina-dati">
+        <span className="pedina-fv">{voto(fv)}</span>
+        <span className={s ? `pedina-p ${s.classe}` : "pedina-p"}>{pct(g.p_gioca)}</span>
+      </span>
+      {s && <span className={`pedina-nota ${s.classe}`}>{s.testo}</span>}
+    </li>
+  );
+}
+
+/** Il campo con i titolari disposti secondo il modulo. */
+export function Campo({ formazione, ctx }: { formazione: Formazione; ctx: Contesto }) {
+  return (
+    <div className="campo-da-gioco" role="group" aria-label={`Formazione ${formazione.modulo}`}>
+      <svg className="linee-campo" viewBox="0 0 68 105" preserveAspectRatio="none" aria-hidden="true">
+        <rect x="1.5" y="1.5" width="65" height="102" />
+        <line x1="1.5" y1="52.5" x2="66.5" y2="52.5" />
+        <circle cx="34" cy="52.5" r="9.15" />
+        <rect x="13.84" y="1.5" width="40.32" height="16.5" />
+        <rect x="24.84" y="1.5" width="18.32" height="5.5" />
+        <rect x="13.84" y="87" width="40.32" height="16.5" />
+        <rect x="24.84" y="98" width="18.32" height="5.5" />
+      </svg>
+      {RIGHE.map((r) => (
+        <ol key={r} className={`linea linea-${r}`} aria-label={NOMI_RUOLO[r]}>
+          {formazione.titolari
+            .filter((g) => g.ruolo === r)
+            .map((g) => (
+              <Pedina key={g.id} g={g} ctx={ctx} />
+            ))}
+        </ol>
+      ))}
+    </div>
+  );
+}

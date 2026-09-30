@@ -9,11 +9,11 @@ export default function LegaPage() {
   return (
     <>
       <section className="apertura">
-        <p className="occhiello">Formazione e scambi</p>
+        <p className="occhiello">Formazione</p>
         <h1>La mia lega</h1>
         <p className="sottotitolo">
-          Importa le rose e imposta le regole della tua lega: ti diciamo chi schierare questa giornata e
-          quali scambi ti convengono e possono essere accettati.
+          Importa le rose e imposta le regole della tua lega: ti diciamo chi schierare questa giornata, con
+          modulo e panchina in ordine di ingresso.
         </p>
       </section>
       <Lega giocatori={giocatori} giornata={giornata.giornata} sdVoto={giornata.sd_voto} />
