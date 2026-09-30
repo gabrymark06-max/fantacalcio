@@ -1944,10 +1944,6 @@ button.carta-scambio[aria-pressed="true"] {
   .tavolo-partita {
     grid-template-columns: minmax(0, 1fr);
   }
-  /* su schermi stretti prima il confronto, poi le due squadre */
-  .confronto {
-    order: -1;
-  }
 }
 
 @media (max-width: 40rem) {
@@ -2029,10 +2025,6 @@ button.carta-scambio[aria-pressed="true"] {
   }
   .colonna-casa > * { grid-column: 1; }
   .colonna-trasferta > * { grid-column: 3; }
-  .confronto {
-    grid-column: 2;
-    grid-row: 1 / span 3;
-  }
   .campo-partita { grid-row: 1; }
   .riquadro-ballottaggi { grid-row: 2; }
   .riquadro-indisponibili {
@@ -2260,5 +2252,234 @@ button.carta-scambio[aria-pressed="true"] {
   .svincolo-guadagno {
     grid-column: 2;
     grid-row: 1 / span 2;
+  }
+}
+
+/* ---------- Pronostico, forma, da sapere, giocatori da seguire ---------- */
+
+@media (min-width: 64.01rem) {
+  /* due righe in più sotto ballottaggi e indisponibili; l'ultima assorbe l'altezza del confronto */
+  .tavolo-partita {
+    grid-template-rows: auto auto auto auto auto 1fr;
+  }
+  .colonna-centrale {
+    grid-column: 2;
+    grid-row: 1 / span 6;
+    align-self: start;
+  }
+  .riquadro-indisponibili {
+    align-self: stretch;
+  }
+  .riquadro-riga4 { grid-row: 4; }
+  .riquadro-riga5 { grid-row: 5; }
+}
+
+.etichetta-riquadro {
+  margin: 0.75rem 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--inchiostro-2);
+}
+
+.barra-esiti {
+  display: flex;
+  gap: 2px;
+  height: 2rem;
+  border-radius: 0.4rem;
+  overflow: hidden;
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.barra-esiti span {
+  display: grid;
+  place-items: center;
+  min-width: 3rem;
+  white-space: nowrap;
+}
+
+.esito-1 { background: var(--ruolo-d); color: #fff; }
+.esito-x { background: var(--riga); color: var(--inchiostro); }
+.esito-2 { background: var(--ruolo-c); color: #fff; }
+
+.gol-attesi {
+  margin: 0.6rem 0 0;
+  font-size: 0.9rem;
+}
+
+.risultati-esatti {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.risultati-esatti li {
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: var(--carta);
+  font-size: 0.85rem;
+}
+
+.risultati-esatti strong {
+  font-family: var(--font-titolo);
+  font-size: 1rem;
+}
+
+.mercati {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0.75rem 0 0.5rem;
+}
+
+.mercati > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.mercati dt {
+  color: var(--inchiostro-2);
+}
+
+.mercati dd {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-family: var(--font-dati);
+}
+
+.mercati .barra-p {
+  width: 4.5rem;
+  flex: none;
+}
+
+.riga-forma {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+}
+
+.riga-forma + .riga-forma {
+  border-top: 1px dashed var(--riga);
+}
+
+.riga-forma > div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.pallini-forma {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 0.25rem;
+}
+
+.pallini-forma li {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.3rem;
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  font-size: 0.75rem;
+}
+
+.forma-V { background: var(--ruolo-d); color: #fff; }
+.forma-N { background: var(--riga); color: var(--inchiostro); }
+.forma-P { background: transparent; color: var(--inchiostro-2); box-shadow: inset 0 0 0 1px var(--inchiostro-2); }
+
+.da-sapere {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.evidenze {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.evidenze li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.875rem;
+}
+
+.evidenza-p {
+  font-family: var(--font-dati);
+  font-weight: 700;
+}
+
+.barra-esiti span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.barra-esiti b {
+  font-size: 0.95rem;
+}
+
+.ultime-partite {
+  list-style: none;
+  margin: 0.35rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.85rem;
+}
+
+.ultime-partite li {
+  display: grid;
+  grid-template-columns: auto 2.2rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ultime-partite span:last-child {
+  color: var(--inchiostro-2);
+}
+
+.mini-esito {
+  display: grid;
+  place-items: center;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 0.25rem;
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  font-size: 0.65rem;
+}
+
+/* confronto e forma recente, uno sotto l'altro al centro */
+.colonna-centrale {
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (max-width: 64rem) {
+  .colonna-centrale {
+    order: -1;
   }
 }

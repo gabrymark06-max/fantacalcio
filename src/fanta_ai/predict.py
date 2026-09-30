@@ -156,6 +156,29 @@ def features_for(base: pd.DataFrame, rows: pd.DataFrame) -> pd.DataFrame:
     return full[full["_futura"].astype(bool)].copy()
 
 
+def forma_recente(n: int = 5) -> dict[str, list[dict]]:
+    """Ultime `n` partite giocate da ogni squadra (anche della stagione prima), dalla più recente:
+    esito V/N/P, gol fatti e subiti, avversario, casa o trasferta."""
+    righe = []
+    for f in sorted((DATA_DIR / "raw").glob("quote_*.csv")):
+        righe.append(pd.read_csv(f, usecols=["data", "casa", "trasferta", "gol_casa", "gol_trasferta"]))
+    if not righe:
+        return {}
+    partite = pd.concat(righe).dropna(subset=["gol_casa", "gol_trasferta"]).sort_values("data", ascending=False)
+    forma: dict[str, list[dict]] = {}
+    for m in partite.itertuples():
+        for squadra, avversario, fatti, subiti, casa in (
+            (m.casa, m.trasferta, m.gol_casa, m.gol_trasferta, True),
+            (m.trasferta, m.casa, m.gol_trasferta, m.gol_casa, False),
+        ):
+            lista = forma.setdefault(squadra, [])
+            if len(lista) < n:
+                esito = "V" if fatti > subiti else "N" if fatti == subiti else "P"
+                lista.append({"esito": esito, "fatti": int(fatti), "subiti": int(subiti), "avversario": avversario,
+                              "casa": casa, "data": str(m.data)})
+    return forma
+
+
 def prossime_components(base, models, listone: pd.DataFrame, ratings: pd.DataFrame, home_adv: float, league_avg: float) -> dict:
     """Voci attese del fantavoto in media sulle prossime giornate, contro gli avversari veri
     (data/raw/calendario_prossime.json). Servono solo agli scambi: chi ha un calendario facile
@@ -278,6 +301,7 @@ def export(rows: pd.DataFrame, context: pd.DataFrame, giornata: int, n_sos: int,
         .sort_values(["data", "ora"])
         [["casa", "trasferta", "data", "ora", "p1", "px", "p2", "xg_casa", "xg_trasferta", "fonte_contesto"]]
     )
+    forma = forma_recente()
     meta = {
         "stagione": CURRENT_SEASON,
         "giornata": giornata,
@@ -285,7 +309,11 @@ def export(rows: pd.DataFrame, context: pd.DataFrame, giornata: int, n_sos: int,
         "giocatori_con_titolarita": n_sos,
         "nomi_titolarita_non_collegati": non_trovati,
         "sd_voto": SD_VOTO,
-        "partite": [{k: (_round(v) if isinstance(v, float) else v) for k, v in p.items()} for p in partite.to_dict("records")],
+        "partite": [
+            {**{k: (_round(v) if isinstance(v, float) else v) for k, v in p.items()},
+             "forma_casa": forma.get(p["casa"], []), "forma_trasferta": forma.get(p["trasferta"], [])}
+            for p in partite.to_dict("records")
+        ],
     }
     (WEB_DATA / "giocatori.json").write_text(json.dumps(giocatori, ensure_ascii=False), encoding="utf-8")
     (WEB_DATA / "giornata.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1), encoding="utf-8")

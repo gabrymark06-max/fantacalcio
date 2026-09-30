@@ -21,7 +21,91 @@
    "p2": 0.4,
    "xg_casa": 1.177,
    "xg_trasferta": 1.321,
-   "fonte_contesto": "stima"
+   "fonte_contesto": "stima",
+   "forma_casa": [
+    {
+     "esito": "P",
+     "fatti": 1,
+     "subiti": 2,
+     "avversario": "Parma",
+     "casa": false,
+     "data": "2026-09-20"
+    },
+    {
+     "esito": "N",
+     "fatti": 1,
+     "subiti": 1,
+     "avversario": "Frosinone",
+     "casa": true,
+     "data": "2026-09-12"
+    },
+    {
+     "esito": "P",
+     "fatti": 1,
+     "subiti": 4,
+     "avversario": "Como",
+     "casa": true,
+     "data": "2026-09-04"
+    },
+    {
+     "esito": "P",
+     "fatti": 0,
+     "subiti": 1,
+     "avversario": "Lazio",
+     "casa": false,
+     "data": "2026-08-30"
+    },
+    {
+     "esito": "P",
+     "fatti": 0,
+     "subiti": 2,
+     "avversario": "Napoli",
+     "casa": true,
+     "data": "2026-08-22"
+    }
+   ],
+   "forma_trasferta": [
+    {
+     "esito": "N",
+     "fatti": 1,
+     "subiti": 1,
+     "avversario": "Napoli",
+     "casa": true,
+     "data": "2026-09-20"
+    },
+    {
+     "esito": "V",
+     "fatti": 4,
+     "subiti": 2,
+     "avversario": "Venezia",
+     "casa": false,
+     "data": "2026-09-11"
+    },
+    {
+     "esito": "P",
+     "fatti": 1,
+     "subiti": 2,
+     "avversario": "Torino",
+     "casa": true,
+     "data": "2026-09-05"
+    },
+    {
+     "esito": "P",
+     "fatti": 0,
+     "subiti": 3,
+     "avversario": "Frosinone",
+     "casa": true,
+     "data": "2026-08-29"
+    },
+    {
+     "esito": "P",
+     "fatti": 0,
+     "subiti": 4,
+     "avversario": "Roma",
+     "casa": false,
+     "data": "2026-08-24"
+    }
+   ]
   },
   {
    "casa": "Inter",
@@ -33,7 +117,91 @@
    "p2": 0.046,
    "xg_casa": 2.951,
    "xg_trasferta": 0.575,
-   "fonte_contesto": "stima"
+   "fonte_contesto": "stima",
+   "forma_casa": [
+    {
+     "esito": "N",
+     "fatti": 2,
+     "subiti": 2,
+     "avversario": "Roma",
+     "casa": false,
+     "data": "2026-09-19"
+    },
+    {
+     "esito": "V",
+     "fatti": 5,
+     "subiti": 3,
+     "avversario": "Udinese",
+     "casa": true,
+     "data": "2026-09-14"
+    },
+    {
+     "esito": "V",
+     "fatti": 3,
+     "subiti": 2,
+     "avversario": "Napoli",
+     "casa": true,
+     "data": "2026-09-05"
+    },
+    {
+     "esito": "V",
+     "fatti": 1,
+     "subiti": 0,
+     "avversario": "Cagliari",
+     "casa": false,
+     "data": "2026-08-30"
+    },
+    {
+     "esito": "V",
+     "fatti": 4,
+     "subiti": 1,
+     "avversario": "Monza",
+     "casa": true,
+     "data": "2026-08-22"
+    }
+   ],
+   "forma_trasferta": [
+    {
+     "esito": "V",
+     "fatti": 2,
+     "subiti": 1,
+     "avversario": "Genoa",
+     "casa": true,
+     "data": "2026-09-20"
+    },
+    {
+     "esito": "P",
+     "fatti": 1,
+     "subiti": 2,
+     "avversario": "Como",
+     "casa": false,
+     "data": "2026-09-14"
+    },
+    {
+     "esito": "N",
+     "fatti": 1,
+     "subiti": 1,
+     "avversario": "Monza",
+     "casa": true,
+     "data": "2026-09-06"
+    },
+    {
+     "esito": "P",
+     "fatti": 0,
+     "subiti": 2,
+     "avversario": "Juventus",
+     "casa": false,
+     "data": "2026-08-29"
+    },
+    {
+     "esito": "P",
+     "fatti": 0,
+     "subiti": 1,
+     "avversario": "Cagliari",
+     "casa": true,
+     "data": "2026-08-22"
+    }
+   ]
   },
   {
    "casa": "Napoli",
@@ -45,7 +213,91 @@
    "p2": 0.152,
    "xg_casa": 2.023,
    "xg_trasferta": 0.866,
-   "fonte_contesto": "stima"
+   "fonte_contesto": "stima",
+   "forma_casa": [
+    {
+     "esito": "N",
+     "fatti": 1,
+     "subiti": 1,
+     "avversario": "Fiorentina",
+     "casa": false,
+     "data": "2026-09-20"
+    },
+    {
+     "esito": "V",
+     "fatti": 1,
+     "subiti": 0,
+     "avversario": "Bologna",
+     "casa": true,
+     "data": "2026-09-13"
+    },
+    {
+     "esito": "P",
+     "fatti": 2,
+     "subiti": 3,
+     "avversario": "Inter",
+     "casa": false,
+     "data": "2026-09-05"
+    },
+    {
+     "esito": "P",
+     "fatti": 1,
+     "subiti": 2,
+     "avversario": "Como",
+     "casa": true,
+     "data": "2026-08-30"
+    },
+    {
+     "esito": "V",
+     "fatti": 2,
+     "subiti": 0,
+     "avversario": "Genoa",
+     "casa": false,
+     "data": "2026-08-22"
+    }
+   ],
+   "forma_trasferta": [
+    {
+     "esito": "V",
+     "fatti": 2,
+     "subiti": 0,
+     "avversario": "Como",
+     "casa": true,
+     "data": "2026-09-20"
+    },
+    {
+     "esito": "N",
+     "fatti": 1,
+     "subiti": 1,
+     "avversario": "Genoa",
+     "casa": false,
+     "data": "2026-09-12"
+    },
+    {
+     "esito": "V",
+     "fatti": 3,
+     "subiti": 2,
+     "avversario": "Venezia",
+     "casa": true,
+     "data": "2026-09-06"
+    },
+    {
+     "esito": "V",
+     "fatti": 3,
+     "subiti": 0,
+     "avversario": "Fiorentina",
+     "casa": false,
+     "data": "2026-08-29"
+    },
+    {
+     "esito": "P",
+     "fatti": 0,
+     "subiti": 1,
+     "avversario": "Juventus",
+     "casa": true,
+     "data": "2026-08-23"
+    }
+   ]
   },
   {
    "casa": "Como",
@@ -57,7 +309,91 @@
    "p2": 0.291,
    "xg_casa": 1.379,
    "xg_trasferta": 1.068,
-   "fonte_contesto": "stima"
+   "fonte_contesto": "stima",
+   "forma_casa": [
+    {
+     "esito": "P",
+     "fatti": 0,
+     "subiti": 2,
+     "avversario": "Frosinone",
+     "casa": false,
+     "data": "2026-09-20"
+    },
+    {
+     "esito": "V",
+     "fatti": 2,
+     "subiti": 1,
+     "avversario": "Parma",
+     "casa": true,
+     "data": "2026-09-14"
+    },
+    {
+     "esito": "V",
+     "fatti": 4,
+     "subiti": 1,
+     "avversario": "Genoa",
+     "casa": false,
+     "data": "2026-09-04"
+    },
+    {
+     "esito": "V",
+     "fatti": 2,
+     "subiti": 1,
+     "avversario": "Napoli",
+     "casa": false,
+     "data": "2026-08-30"
+    },
+    {
+     "esito": "N",
+     "fatti": 1,
+     "subiti": 1,
+     "avversario": "Udinese",
+     "casa": false,
+     "data": "2026-08-22"
+    }
+   ],
+   "forma_trasferta": [
+    {
+     "esito": "N",
+     "fatti": 2,
+     "subiti": 2,
+     "avversario": "Inter",
+     "casa": true,
+     "data": "2026-09-19"
+    },
+    {
+     "esito": "V",
+     "fatti": 2,
+     "subiti": 0,
+     "avversario": "Torino",
+     "casa": false,
+     "data": "2026-09-14"
+    },
+    {
+     "esito": "V",
+     "fatti": 2,
+     "subiti": 1,
+     "avversario": "Atalanta",
+     "casa": true,
+     "data": "2026-09-05"
+    },
+    {
+     "esito": "V",
+     "fatti": 4,
+     "subiti": 0,
+     "avversario": "Lecce",
+     "casa": false,
+     "data": "2026-08-31"
+    },
+    {
+     "esito": "V",
+     "fatti": 4,
+     "subiti": 0,
+     "avversario": "Fiorentina",
+     "casa": true,
+     "data": "2026-08-24"
+    }
+   ]
   },
   {
    "casa": "Lazio",
@@ -69,7 +405,91 @@
    "p2": 0.131,
    "xg_casa": 2.037,
    "xg_trasferta": 0.767,
-   "fonte_contesto": "stima"
+   "fonte_contesto": "stima",
+   "forma_casa": [
+    {
+     "esito": "V",
+     "fatti": 2,
+     "subiti": 0,
+     "avversario": "Venezia",
+     "casa": false,
+     "data": "2026-09-19"
+    },
+    {
+     "esito": "N",
+     "fatti": 2,
+     "subiti": 2,
+     "avversario": "Milan",
+     "casa": true,
+     "data": "2026-09-12"
+    },
+    {
+     "esito": "V",
+     "fatti": 2,
+     "subiti": 1,
+     "avversario": "Udinese",
+     "casa": false,
+     "data": "2026-09-07"
+    },
+    {
+     "esito": "V",
+     "fatti": 1,
+     "subiti": 0,
+     "avversario": "Genoa",
+     "casa": true,
+     "data": "2026-08-30"
+    },
+    {
+     "esito": "V",
+     "fatti": 1,
+     "subiti": 0,
+     "avversario": "Bologna",
+     "casa": false,
+     "data": "2026-08-24"
+    }
+   ],
+   "forma_trasferta": [
+    {
+     "esito": "V",
+     "fatti": 2,
+     "subiti": 1,
+     "avversario": "Sassuolo",
+     "casa": true,
+     "data": "2026-09-18"
+    },
+    {
+     "esito": "P",
+     "fatti": 2,
+     "subiti": 3,
+     "avversario": "Lecce",
+     "casa": false,
+     "data": "2026-09-13"
+    },
+    {
+     "esito": "N",
+     "fatti": 1,
+     "subiti": 1,
+     "avversario": "Parma",
+     "casa": false,
+     "data": "2026-09-06"
+    },
+    {
+     "esito": "P",
+     "fatti": 2,
+     "subiti": 3,
+     "avversario": "Udinese",
+     "casa": true,
+     "data": "2026-08-29"
+    },
+    {
+     "esito": "P",
+     "fatti": 1,
+     "subiti": 4,
+     "avversario": "Inter",
+     "casa": false,
+     "data": "2026-08-22"
+    }
+   ]
   },
   {
    "casa": "Lecce",
@@ -81,7 +501,91 @@
    "p2": 0.355,
    "xg_casa": 1.199,
    "xg_trasferta": 1.177,
-   "fonte_contesto": "stima"
+   "fonte_contesto": "stima",
+   "forma_casa": [
+    {
+     "esito": "P",
+     "fatti": 0,
+     "subiti": 3,
+     "avversario": "Milan",
+     "casa": false,
+     "data": "2026-09-20"
+    },
+    {
+     "esito": "V",
+     "fatti": 3,
+     "subiti": 2,
+     "avversario": "Monza",
+     "casa": true,
+     "data": "2026-09-13"
+    },
+    {
+     "esito": "P",
+     "fatti": 0,
+     "subiti": 1,
+     "avversario": "Cagliari",
+     "casa": false,
+     "data": "2026-09-07"
+    },
+    {
+     "esito": "P",
+     "fatti": 0,
+     "subiti": 4,
+     "avversario": "Roma",
+     "casa": true,
+     "data": "2026-08-31"
+    },
+    {
+     "esito": "V",
+     "fatti": 2,
+     "subiti": 0,
+     "avversario": "Venezia",
+     "casa": false,
+     "data": "2026-08-23"
+    }
+   ],
+   "forma_trasferta": [
+    {
+     "esito": "N",
+     "fatti": 1,
+     "subiti": 1,
+     "avversario": "Torino",
+     "casa": true,
+     "data": "2026-09-19"
+    },
+    {
+     "esito": "P",
+     "fatti": 0,
+     "subiti": 1,
+     "avversario": "Napoli",
+     "casa": false,
+     "data": "2026-09-13"
+    },
+    {
+     "esito": "N",
+     "fatti": 2,
+     "subiti": 2,
+     "avversario": "Sassuolo",
+     "casa": true,
+     "data": "2026-09-06"
+    },
+    {
+     "esito": "P",
+     "fatti": 0,
+     "subiti": 1,
+     "avversario": "Atalanta",
+     "casa": false,
+     "data": "2026-08-31"
+    },
+    {
+     "esito": "P",
+     "fatti": 0,
+     "subiti": 1,
+     "avversario": "Lazio",
+     "casa": true,
+     "data": "2026-08-24"
+    }
+   ]
   },
   {
    "casa": "Sassuolo",
@@ -93,7 +597,91 @@
    "p2": 0.557,
    "xg_casa": 0.984,
    "xg_trasferta": 1.766,
-   "fonte_contesto": "stima"
+   "fonte_contesto": "stima",
+   "forma_casa": [
+    {
+     "esito": "P",
+     "fatti": 1,
+     "subiti": 2,
+     "avversario": "Monza",
+     "casa": false,
+     "data": "2026-09-18"
+    },
+    {
+     "esito": "V",
+     "fatti": 3,
+     "subiti": 2,
+     "avversario": "Juventus",
+     "casa": true,
+     "data": "2026-09-13"
+    },
+    {
+     "esito": "N",
+     "fatti": 2,
+     "subiti": 2,
+     "avversario": "Bologna",
+     "casa": false,
+     "data": "2026-09-06"
+    },
+    {
+     "esito": "V",
+     "fatti": 2,
+     "subiti": 1,
+     "avversario": "Torino",
+     "casa": true,
+     "data": "2026-08-29"
+    },
+    {
+     "esito": "P",
+     "fatti": 1,
+     "subiti": 2,
+     "avversario": "Atalanta",
+     "casa": false,
+     "data": "2026-08-23"
+    }
+   ],
+   "forma_trasferta": [
+    {
+     "esito": "V",
+     "fatti": 3,
+     "subiti": 0,
+     "avversario": "Lecce",
+     "casa": true,
+     "data": "2026-09-20"
+    },
+    {
+     "esito": "N",
+     "fatti": 2,
+     "subiti": 2,
+     "avversario": "Lazio",
+     "casa": false,
+     "data": "2026-09-12"
+    },
+    {
+     "esito": "N",
+     "fatti": 1,
+     "subiti": 1,
+     "avversario": "Juventus",
+     "casa": false,
+     "data": "2026-09-06"
+    },
+    {
+     "esito": "V",
+     "fatti": 2,
+     "subiti": 0,
+     "avversario": "Venezia",
+     "casa": true,
+     "data": "2026-08-28"
+    },
+    {
+     "esito": "V",
+     "fatti": 2,
+     "subiti": 1,
+     "avversario": "Torino",
+     "casa": false,
+     "data": "2026-08-23"
+    }
+   ]
   },
   {
    "casa": "Cagliari",
@@ -105,7 +693,91 @@
    "p2": 0.671,
    "xg_casa": 0.718,
    "xg_trasferta": 1.979,
-   "fonte_contesto": "stima"
+   "fonte_contesto": "stima",
+   "forma_casa": [
+    {
+     "esito": "V",
+     "fatti": 1,
+     "subiti": 0,
+     "avversario": "Udinese",
+     "casa": false,
+     "data": "2026-09-19"
+    },
+    {
+     "esito": "V",
+     "fatti": 2,
+     "subiti": 1,
+     "avversario": "Atalanta",
+     "casa": false,
+     "data": "2026-09-12"
+    },
+    {
+     "esito": "V",
+     "fatti": 1,
+     "subiti": 0,
+     "avversario": "Lecce",
+     "casa": true,
+     "data": "2026-09-07"
+    },
+    {
+     "esito": "P",
+     "fatti": 0,
+     "subiti": 1,
+     "avversario": "Inter",
+     "casa": true,
+     "data": "2026-08-30"
+    },
+    {
+     "esito": "V",
+     "fatti": 1,
+     "subiti": 0,
+     "avversario": "Parma",
+     "casa": false,
+     "data": "2026-08-22"
+    }
+   ],
+   "forma_trasferta": [
+    {
+     "esito": "V",
+     "fatti": 2,
+     "subiti": 0,
+     "avversario": "Atalanta",
+     "casa": true,
+     "data": "2026-09-20"
+    },
+    {
+     "esito": "P",
+     "fatti": 2,
+     "subiti": 3,
+     "avversario": "Sassuolo",
+     "casa": false,
+     "data": "2026-09-13"
+    },
+    {
+     "esito": "N",
+     "fatti": 1,
+     "subiti": 1,
+     "avversario": "Milan",
+     "casa": true,
+     "data": "2026-09-06"
+    },
+    {
+     "esito": "V",
+     "fatti": 2,
+     "subiti": 0,
+     "avversario": "Parma",
+     "casa": true,
+     "data": "2026-08-29"
+    },
+    {
+     "esito": "V",
+     "fatti": 1,
+     "subiti": 0,
+     "avversario": "Frosinone",
+     "casa": false,
+     "data": "2026-08-23"
+    }
+   ]
   },
   {
    "casa": "Atalanta",
@@ -117,7 +789,91 @@
    "p2": 0.177,
    "xg_casa": 1.931,
    "xg_trasferta": 0.934,
-   "fonte_contesto": "stima"
+   "fonte_contesto": "stima",
+   "forma_casa": [
+    {
+     "esito": "P",
+     "fatti": 0,
+     "subiti": 2,
+     "avversario": "Juventus",
+     "casa": false,
+     "data": "2026-09-20"
+    },
+    {
+     "esito": "P",
+     "fatti": 1,
+     "subiti": 2,
+     "avversario": "Cagliari",
+     "casa": true,
+     "data": "2026-09-12"
+    },
+    {
+     "esito": "P",
+     "fatti": 1,
+     "subiti": 2,
+     "avversario": "Roma",
+     "casa": false,
+     "data": "2026-09-05"
+    },
+    {
+     "esito": "V",
+     "fatti": 1,
+     "subiti": 0,
+     "avversario": "Bologna",
+     "casa": true,
+     "data": "2026-08-31"
+    },
+    {
+     "esito": "V",
+     "fatti": 2,
+     "subiti": 1,
+     "avversario": "Sassuolo",
+     "casa": true,
+     "data": "2026-08-23"
+    }
+   ],
+   "forma_trasferta": [
+    {
+     "esito": "P",
+     "fatti": 0,
+     "subiti": 2,
+     "avversario": "Lazio",
+     "casa": true,
+     "data": "2026-09-19"
+    },
+    {
+     "esito": "P",
+     "fatti": 2,
+     "subiti": 4,
+     "avversario": "Fiorentina",
+     "casa": true,
+     "data": "2026-09-11"
+    },
+    {
+     "esito": "P",
+     "fatti": 2,
+     "subiti": 3,
+     "avversario": "Frosinone",
+     "casa": false,
+     "data": "2026-09-06"
+    },
+    {
+     "esito": "P",
+     "fatti": 0,
+     "subiti": 2,
+     "avversario": "Milan",
+     "casa": false,
+     "data": "2026-08-28"
+    },
+    {
+     "esito": "P",
+     "fatti": 0,
+     "subiti": 2,
+     "avversario": "Lecce",
+     "casa": true,
+     "data": "2026-08-23"
+    }
+   ]
   },
   {
    "casa": "Torino",
@@ -129,7 +885,91 @@
    "p2": 0.361,
    "xg_casa": 1.195,
    "xg_trasferta": 1.194,
-   "fonte_contesto": "stima"
+   "fonte_contesto": "stima",
+   "forma_casa": [
+    {
+     "esito": "N",
+     "fatti": 1,
+     "subiti": 1,
+     "avversario": "Bologna",
+     "casa": false,
+     "data": "2026-09-19"
+    },
+    {
+     "esito": "P",
+     "fatti": 0,
+     "subiti": 2,
+     "avversario": "Roma",
+     "casa": true,
+     "data": "2026-09-14"
+    },
+    {
+     "esito": "V",
+     "fatti": 2,
+     "subiti": 1,
+     "avversario": "Fiorentina",
+     "casa": false,
+     "data": "2026-09-05"
+    },
+    {
+     "esito": "P",
+     "fatti": 1,
+     "subiti": 2,
+     "avversario": "Sassuolo",
+     "casa": false,
+     "data": "2026-08-29"
+    },
+    {
+     "esito": "P",
+     "fatti": 1,
+     "subiti": 2,
+     "avversario": "Milan",
+     "casa": true,
+     "data": "2026-08-23"
+    }
+   ],
+   "forma_trasferta": [
+    {
+     "esito": "P",
+     "fatti": 0,
+     "subiti": 1,
+     "avversario": "Cagliari",
+     "casa": true,
+     "data": "2026-09-19"
+    },
+    {
+     "esito": "P",
+     "fatti": 3,
+     "subiti": 5,
+     "avversario": "Inter",
+     "casa": false,
+     "data": "2026-09-14"
+    },
+    {
+     "esito": "P",
+     "fatti": 1,
+     "subiti": 2,
+     "avversario": "Lazio",
+     "casa": true,
+     "data": "2026-09-07"
+    },
+    {
+     "esito": "V",
+     "fatti": 3,
+     "subiti": 2,
+     "avversario": "Monza",
+     "casa": false,
+     "data": "2026-08-29"
+    },
+    {
+     "esito": "N",
+     "fatti": 1,
+     "subiti": 1,
+     "avversario": "Como",
+     "casa": true,
+     "data": "2026-08-22"
+    }
+   ]
   }
  ]
 }

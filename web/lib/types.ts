@@ -55,6 +55,16 @@ export interface Giocatore {
   prossime?: Componenti | null;
 }
 
+/** Una partita giocata di recente da una squadra (dalla più recente). */
+export interface Forma {
+  esito: "V" | "N" | "P";
+  fatti: number;
+  subiti: number;
+  avversario: string;
+  casa: boolean;
+  data: string;
+}
+
 export interface Partita {
   casa: string;
   trasferta: string;
@@ -66,6 +76,8 @@ export interface Partita {
   xg_casa: number;
   xg_trasferta: number;
   fonte_contesto: "quote" | "stima";
+  forma_casa?: Forma[];
+  forma_trasferta?: Forma[];
 }
 
 export interface Giornata {

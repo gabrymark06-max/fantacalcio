@@ -5,7 +5,8 @@ import { useMemo, useState } from "react";
 import { Faccia, LineeCampo } from "@/components/Campo";
 import { data, pct, voto } from "@/lib/format";
 import { COLORI, formazioneSquadra, sigla, type FormazioneSquadra, type Nominato, type PartitaProbabile } from "@/lib/probabili";
-import type { Giocatore, Partita } from "@/lib/types";
+import { frasi, migliori, pAssist, pCartellino, pGol, pronostico, riassuntoForma, type Evidenza, type Pronostico } from "@/lib/pronostico";
+import type { Forma, Giocatore, Partita } from "@/lib/types";
 
 /*
  * Probabili formazioni della giornata, una partita alla volta: i due campi ai lati, al
@@ -115,9 +116,27 @@ export function Probabili({ partite, giocatori, probabili, loghi: loghiSquadre }
 
       {casa && trasferta ? (
         <div className="tavolo-partita">
-          <ColonnaSquadra f={casa} lato="casa" />
-          <Confronto casa={casa} trasferta={trasferta} />
-          <ColonnaSquadra f={trasferta} lato="trasferta" />
+          <ColonnaSquadra f={casa} lato="casa">
+            <RiquadroPronostico p={p} pr={pronostico(p)} />
+            <RiquadroGiocatori classe="riquadro-riga5" titolo="Possibili marcatori" liste={[["Segna almeno un gol", pGol, 6]]} casa={casa} trasferta={trasferta} />
+          </ColonnaSquadra>
+          <div className="colonna-centrale">
+            <Confronto casa={casa} trasferta={trasferta} />
+            <RiquadroForma p={p} loghi={loghi} />
+          </div>
+          <ColonnaSquadra f={trasferta} lato="trasferta">
+            <RiquadroDaSapere testi={frasi(p, pronostico(p), casa, trasferta)} />
+            <RiquadroGiocatori
+              classe="riquadro-riga5"
+              titolo="Assist e cartellini"
+              liste={[
+                ["Possibili assist", pAssist, 3],
+                ["Rischio cartellino", pCartellino, 3],
+              ]}
+              casa={casa}
+              trasferta={trasferta}
+            />
+          </ColonnaSquadra>
         </div>
       ) : (
         <p className="vuoto">Rose incomplete nel listone: non si può mostrare la formazione.</p>
@@ -145,7 +164,7 @@ function Pedina({ g }: { g: Giocatore }) {
   );
 }
 
-function ColonnaSquadra({ f, lato }: { f: FormazioneSquadra; lato: "casa" | "trasferta" }) {
+function ColonnaSquadra({ f, lato, children }: { f: FormazioneSquadra; lato: "casa" | "trasferta"; children?: React.ReactNode }) {
   return (
     <div className={`colonna-partita colonna-${lato}`}>
       <div className="mini-campo campo-partita" role="group" aria-label={`${f.squadra}, ${f.modulo}`}>
@@ -203,6 +222,7 @@ function ColonnaSquadra({ f, lato }: { f: FormazioneSquadra; lato: "casa" | "tra
           </ul>
         )}
       </section>
+      {children}
     </div>
   );
 }
@@ -261,5 +281,172 @@ function Confronto({ casa, trasferta }: { casa: FormazioneSquadra; trasferta: Fo
       <h3 className="titolo-panchina">Panchina</h3>
       <Duelli casa={casa.panchina} trasferta={trasferta.panchina} />
     </div>
+  );
+}
+
+// ---------- Pronostico, forma, cose da sapere, giocatori da seguire ----------
+
+function RiquadroPronostico({ p, pr }: { p: Partita; pr: Pronostico }) {
+  const righe: [string, number][] = [
+    ["Più di 1,5 gol", pr.over15],
+    ["Più di 2,5 gol", pr.over25],
+    ["Più di 3,5 gol", pr.over35],
+    ["Segnano entrambe", pr.entrambeSegnano],
+    [`Porta inviolata ${p.casa}`, pr.portaInviolataCasa],
+    [`Porta inviolata ${p.trasferta}`, pr.portaInviolataTrasferta],
+  ];
+  return (
+    <section className="riquadro riquadro-riga4" aria-label="Pronostico">
+      <h3>Pronostico</h3>
+      <div className="barra-esiti" role="img" aria-label={`1 ${pct(p.p1)}, X ${pct(p.px)}, 2 ${pct(p.p2)}`}>
+        {([["1", p.p1], ["X", p.px], ["2", p.p2]] as const).map(([e, q]) => (
+          <span key={e} className={`esito-${e === "X" ? "x" : e}`} style={{ flexGrow: q }}>
+            <b>{e}</b>
+            {pct(q)}
+          </span>
+        ))}
+      </div>
+      <p className="gol-attesi">
+        Gol attesi: <strong>{p.casa} {voto(p.xg_casa)}</strong> – <strong>{voto(p.xg_trasferta)} {p.trasferta}</strong>
+      </p>
+      <p className="etichetta-riquadro">Risultati più probabili</p>
+      <ul className="risultati-esatti">
+        {pr.risultati.map((r) => (
+          <li key={`${r.casa}-${r.trasferta}`}>
+            <strong>
+              {r.casa}-{r.trasferta}
+            </strong>{" "}
+            {pct(r.p)}
+          </li>
+        ))}
+      </ul>
+      <dl className="mercati">
+        {righe.map(([k, v]) => (
+          <div key={k}>
+            <dt>{k}</dt>
+            <dd>
+              <span className="barra-p" aria-hidden="true">
+                <span style={{ width: `${Math.round(v * 100)}%` }} />
+              </span>
+              {pct(v)}
+            </dd>
+          </div>
+        ))}
+      </dl>
+      <p className="nota-piccola">
+        {p.fonte_contesto === "quote" ? "Dalle quote dei bookmaker." : "Stimate dalla forza delle squadre nelle ultime partite."} Probabilità
+        statistiche, non consigli di scommessa.
+      </p>
+    </section>
+  );
+}
+
+function PallinoForma({ x }: { x: Forma }) {
+  return (
+    <li className={`forma-${x.esito}`} title={`${x.fatti}-${x.subiti} ${x.casa ? "in casa con" : "in trasferta a"} ${x.avversario}`}>
+      {x.esito}
+    </li>
+  );
+}
+
+function RiquadroForma({ p, loghi }: { p: Partita; loghi: Record<string, string> }) {
+  return (
+    <section className="riquadro" aria-label="Forma recente">
+      <h3>Forma recente</h3>
+      {([[p.casa, p.forma_casa ?? []], [p.trasferta, p.forma_trasferta ?? []]] as const).map(([squadra, forma]) => {
+        const r = riassuntoForma(forma);
+        return (
+          <div key={squadra} className="riga-forma">
+            <Distintivo squadra={squadra} logo={loghi[squadra]} />
+            <div>
+              <strong>{squadra}</strong>
+              {forma.length ? (
+                <>
+                  <ol className="pallini-forma" aria-label="Ultime partite, dalla più recente">
+                    {forma.map((x) => (
+                      <PallinoForma key={x.data + x.avversario} x={x} />
+                    ))}
+                  </ol>
+                  <span className="nota-piccola">
+                    {r.fatti} gol fatti, {r.subiti} subiti nelle ultime {forma.length}
+                  </span>
+                  <ul className="ultime-partite">
+                    {forma.map((x) => (
+                      <li key={x.data + x.avversario}>
+                        <span className={`forma-${x.esito} mini-esito`}>{x.esito}</span>
+                        <strong>
+                          {x.fatti}-{x.subiti}
+                        </strong>
+                        <span>
+                          {x.casa ? "in casa con" : "a"} {x.avversario}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                <span className="nota-piccola"> nessuna partita recente in Serie A</span>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </section>
+  );
+}
+
+function RiquadroDaSapere({ testi }: { testi: string[] }) {
+  return (
+    <section className="riquadro riquadro-riga4" aria-label="Da sapere">
+      <h3>Da sapere</h3>
+      <ul className="da-sapere">
+        {testi.map((t) => (
+          <li key={t}>{t}</li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function ListaEvidenze({ titolo, voci }: { titolo: string; voci: Evidenza[] }) {
+  return (
+    <>
+      <p className="etichetta-riquadro">{titolo}</p>
+      <ol className="evidenze">
+        {voci.map(({ g, p }) => (
+          <li key={g.id}>
+            <Faccia g={g} />
+            <span>
+              <strong>{g.nome}</strong> <span className="nota-piccola">{g.squadra}</span>
+            </span>
+            <span className="evidenza-p">{pct(p)}</span>
+          </li>
+        ))}
+      </ol>
+    </>
+  );
+}
+
+function RiquadroGiocatori({
+  classe,
+  titolo,
+  liste,
+  casa,
+  trasferta,
+}: {
+  classe: string;
+  titolo: string;
+  liste: [string, (g: Giocatore) => number, number][];
+  casa: FormazioneSquadra;
+  trasferta: FormazioneSquadra;
+}) {
+  const titolari = [...casa.titolari, ...trasferta.titolari];
+  return (
+    <section className={`riquadro ${classe}`} aria-label={titolo}>
+      <h3>{titolo}</h3>
+      {liste.map(([etichetta, f, quanti]) => (
+        <ListaEvidenze key={etichetta} titolo={etichetta} voci={migliori(titolari, f, quanti)} />
+      ))}
+    </section>
   );
 }
