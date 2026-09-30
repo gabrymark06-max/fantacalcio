@@ -56,6 +56,21 @@ FEATURES = [
 ]
 
 
+# Voci del fantavoto (conteggi per partita). Formula fantacalcio.it verificata sui dati
+# 2021/22-2026/27 con residuo zero su 55.224 voti:
+#   FV = voto + 3 gol + 3 rigori segnati + 1 assist - 1 gol subito - 2 autoreti
+#        - 3 rigori sbagliati + 3 rigori parati - 0.5 ammonizione - 1 espulsione
+COMPONENTI_CONTEGGIO = [
+    "gol",
+    "rigori_segnati",
+    "rigori_sbagliati",
+    "assist",
+    "gol_subiti",
+    "autoreti",
+    "rigori_parati",
+]
+
+
 def season_start(stagione: str) -> int:
     return int(stagione[:4])
 
@@ -142,6 +157,10 @@ def build_base() -> pd.DataFrame:
             "rigori_sbagliati",
             "assist",
             "ammonito",
+            "espulso",
+            "gol_subiti",
+            "autoreti",
+            "rigori_parati",
         ]
     ]
     df = rows.merge(stats, on=["stagione", "squadra", "giornata", "id"], how="left")
@@ -150,9 +169,10 @@ def build_base() -> pd.DataFrame:
     df["fv"] = df["fv_fc"]
     df["titolare"] = df["giocato"] & ~df["subentrato"].fillna(False).astype(bool)
     df["subentrato_con_voto"] = df["giocato"] & df["subentrato"].fillna(False).astype(bool)
-    for col in ["gol", "rigori_segnati", "rigori_sbagliati", "assist"]:
+    for col in COMPONENTI_CONTEGGIO:
         df[col] = df[col].fillna(0)
-    df["ammonito"] = df["ammonito"].fillna(False).astype(bool)
+    for col in ["ammonito", "espulso"]:
+        df[col] = df[col].fillna(False).astype(bool)
     df["bonus"] = (df["gol"] + df["rigori_segnati"] + df["assist"]) > 0
 
     df["anno"] = df["stagione"].map(season_start)

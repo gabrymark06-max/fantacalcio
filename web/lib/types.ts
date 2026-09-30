@@ -9,6 +9,22 @@ export const NOMI_RUOLO: Record<Ruolo, string> = {
   A: "Attaccanti",
 };
 
+/** Voci attese del fantavoto se il giocatore gioca (fantacalcio.it, regole standard in fv_std). */
+export interface Componenti {
+  fv_std: number;
+  voto: number;
+  gol: number;
+  rigori_segnati: number;
+  rigori_sbagliati: number;
+  assist: number;
+  ammonito: number;
+  espulso: number;
+  autoreti: number;
+  gol_subiti: number;
+  rigori_parati: number;
+  p_imbattuto: number;
+}
+
 /** Una riga di web/data/giocatori.json (generato da fanta_ai.predict). */
 export interface Giocatore {
   id: number;
@@ -21,14 +37,18 @@ export interface Giocatore {
   fvm: number | null;
   p_gioca: number;
   p_titolare_sos: number | null;
+  /** Fantavoto atteso se gioca, regole standard, prossima giornata. */
   fv_atteso: number;
   p_bonus: number;
   punteggio: number;
   p_gioca_stagione: number | null;
-  fv_stagione: number | null;
   fantamedia: number | null;
   media_voto: number | null;
   presenze: number;
+  /** Voci del fantavoto per la prossima partita. */
+  giornata: Componenti;
+  /** Voci del fantavoto contro l'avversario medio: valore da qui a fine stagione. */
+  stagione: Componenti;
 }
 
 export interface Partita {
@@ -50,6 +70,8 @@ export interface Giornata {
   aggiornato: string;
   giocatori_con_titolarita: number;
   nomi_titolarita_non_collegati: number;
+  /** Deviazione standard del voto puro attorno al previsto, per ruolo (per il modificatore difesa). */
+  sd_voto: Record<Ruolo, number>;
   partite: Partita[];
 }
 

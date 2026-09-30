@@ -689,3 +689,101 @@ thead th {
     transition: width 200ms ease-out;
   }
 }
+
+/* ---------- Regole della lega, modulo, proposte di scambio ---------- */
+
+.regole {
+  margin-top: 1rem;
+  border-top: 1px solid var(--riga);
+  padding-top: 0.75rem;
+}
+
+.regole summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0.25rem 0;
+}
+
+.regole fieldset {
+  margin-top: 1rem;
+}
+
+.griglia-regole {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 0.75rem 1rem;
+  margin: 0.5rem 0;
+}
+
+.scheda label.numero-regola input {
+  font: inherit;
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.4rem 0.5rem;
+  color: var(--inchiostro);
+  background: var(--carta);
+  border: 1px solid var(--riga);
+  border-radius: 0.4rem;
+  font-family: var(--font-dati);
+}
+
+.fascia {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  grid-column: span 2;
+}
+
+.moduli {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+}
+
+.titolo-con-azione {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: end;
+  gap: 0.75rem 1.5rem;
+}
+
+.titolo-con-azione h2 {
+  margin: 0;
+}
+
+.motivo {
+  font-size: 0.875rem;
+  color: var(--inchiostro-2);
+}
+
+.accetta {
+  font-weight: 700;
+  padding: 0 0.3em;
+  border-radius: 0.2em;
+}
+
+.accetta-alta {
+  background: var(--evidenziatore);
+  color: var(--su-giallo);
+}
+
+.accetta-media {
+  border-bottom: 1px dashed currentColor;
+}
+
+.accetta-bassa {
+  color: var(--penna-rossa);
+}
+
+.valore-stagione {
+  margin-left: auto;
+  font-family: var(--font-dati);
+  font-size: 0.8rem;
+  color: var(--inchiostro-2);
+}
+
+.esito ol {
+  padding-left: 0;
+  list-style: none;
+}

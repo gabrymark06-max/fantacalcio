@@ -50,9 +50,18 @@ uv run python -m fanta_ai.backtest     # rigenera reports/backtest.json
 
 Risultati del backtest (2023/24–2025/26, modello allenato solo sugli anni precedenti,
 300 rose simulate per stagione): il modello batte la scelta per fantamedia di
-+0,42 / +0,20 / +0,30 punti a giornata. Sapere in anticipo chi gioca vale circa +2 punti:
++0,55 / +0,18 / +0,29 punti a giornata. Sapere in anticipo chi gioca vale circa +2 punti:
 per questo dal vivo si usano anche le probabili formazioni (effetto misurato da `evaluate.py`
 a partire dalla giornata 6 del 2026/27).
+
+## Regole della lega e scambi
+
+- Il fantavoto fantacalcio.it è ricostruito esattamente dalle sue voci (residuo zero su 55.224 voti):
+  `model.py` prevede fv standard e ogni voce; il sito (`web/lib/rules.ts`) ricalcola il fantavoto con i
+  bonus della lega, l'imbattibilità (P = e^−gol attesi avversario) e il modificatore difesa.
+- Scambi (`web/lib/trades.ts`): guadagno per me = punti attesi della mia formazione migliore da qui a fine
+  stagione; accettazione stimata da equità sul valore di mercato FVM (convesso, come KeepTradeCut) e
+  dal cambiamento della loro formazione. Solo scambi con guadagno ≥ 0,15 a giornata e accettazione ≥ 0,45.
 
 ## Aggiornamento automatico
 

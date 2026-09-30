@@ -12,11 +12,11 @@ export default function LegaPage() {
         <p className="occhiello">Formazione e scambi</p>
         <h1>La mia lega</h1>
         <p className="sottotitolo">
-          Importa le rose: ti diciamo chi schierare questa giornata e quali scambi convengono a te e
-          all&apos;altra squadra.
+          Importa le rose e imposta le regole della tua lega: ti diciamo chi schierare questa giornata e
+          quali scambi ti convengono e possono essere accettati.
         </p>
       </section>
-      <Lega giocatori={giocatori} giornata={giornata.giornata} />
+      <Lega giocatori={giocatori} giornata={giornata.giornata} sdVoto={giornata.sd_voto} />
     </>
   );
 }

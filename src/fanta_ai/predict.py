@@ -24,10 +24,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from fanta_ai.dataset import DATA_DIR, add_match_context, add_player_features, build_base
+from fanta_ai.dataset import COMPONENTI_CONTEGGIO, DATA_DIR, add_match_context, add_player_features, build_base
 from fanta_ai.http import fetch_html
 from fanta_ai.lineup import expected_score
-from fanta_ai.model import predict, train
+from fanta_ai.model import p_bonus, predict_components, train
 from fanta_ai.names import find
 from fanta_ai.scraping.quote import outcome_probabilities, parse_quote
 from fanta_ai.teams import canonical
@@ -43,6 +43,13 @@ P_GIOCA_FUORI_LISTA = 0.03
 PESO_SOS = 0.75
 # Probabilità di entrare dalla panchina e prendere voto, se lo storico non la dice
 SUBENTRO_DEFAULT = {"P": 0.02, "D": 0.2, "C": 0.3, "A": 0.3}
+# Deviazione standard del voto puro attorno al previsto, per ruolo: misurata sulla stagione
+# 2025/26 con il modello allenato sulle precedenti. Serve al modificatore difesa nel sito.
+SD_VOTO = {"P": 0.55, "D": 0.57, "C": 0.56, "A": 0.68}
+COMPONENTI_ESPORTATE = [
+    "fv_std", "voto", "gol", "rigori_segnati", "rigori_sbagliati", "assist", "ammonito",
+    "espulso", "autoreti", "gol_subiti", "rigori_parati", "p_imbattuto",
+]
 
 
 def team_ratings(base: pd.DataFrame, last_n: int = 10) -> pd.DataFrame:
@@ -74,10 +81,20 @@ def home_advantage(base: pd.DataFrame) -> float:
     return float(tm.loc[home, "xg_squadra"].mean() / tm.loc[~home, "xg_squadra"].mean())
 
 
+def league_average(base: pd.DataFrame) -> float:
+    tm = base.dropna(subset=["xg_squadra"]).drop_duplicates(["stagione", "squadra", "giornata"])
+    return float(tm["xg_squadra"].mean())
+
+
 def match_context(
-    partite: list[dict], ratings: pd.DataFrame, odds: pd.DataFrame, home_adv: float
+    partite: list[dict], ratings: pd.DataFrame, odds: pd.DataFrame, home_adv: float, league_avg: float
 ) -> pd.DataFrame:
-    """Una riga per squadra: avversario, casa/trasferta, gol attesi e probabilità di vittoria."""
+    """Una riga per squadra: avversario, casa/trasferta, gol attesi e probabilità di vittoria.
+
+    Senza quote i gol attesi si stimano col modello moltiplicativo attacco × difesa avversaria
+    / media campionato (Maher, Dixon-Coles): sulle stagioni 2023-2026 riproduce i gol attesi
+    delle quote con errore medio 0,11, contro 0,19 della media aritmetica.
+    """
     rows = []
     for m in partite:
         casa, trasferta = m["casa"], m["trasferta"]
@@ -87,8 +104,8 @@ def match_context(
             xg_c, xg_t, p1, px, p2, fonte = q.xg_casa, q.xg_trasferta, q.p1, q.px, q.p2, "quote"
         else:
             rc, rt = ratings.loc[casa], ratings.loc[trasferta]
-            xg_c = (rc.att + rt.dif) / 2 * np.sqrt(home_adv)
-            xg_t = (rt.att + rc.dif) / 2 / np.sqrt(home_adv)
+            xg_c = rc.att * rt.dif / league_avg * np.sqrt(home_adv)
+            xg_t = rt.att * rc.dif / league_avg / np.sqrt(home_adv)
             p1, px, p2 = outcome_probabilities(xg_c, xg_t)
             fonte = "stima"
         common = {"giornata": m["giornata"], "casa": casa, "trasferta": trasferta, "p1": p1, "px": px, "p2": p2,
@@ -99,12 +116,11 @@ def match_context(
 
 
 def neutral_context(ratings: pd.DataFrame) -> pd.DataFrame:
-    """Contesto medio (avversario medio, metà casa e metà trasferta) per il valore stagionale."""
-    league_def = ratings["dif"].mean()
+    """Contesto medio per il valore stagionale: le medie delle ultime partite della squadra sono
+    già contro avversari medi, metà in casa e metà fuori, quindi si usano così come sono."""
     rows = []
     for squadra, r in ratings.iterrows():
-        xg_s = (r.att + league_def) / 2
-        xg_a = (league_def + r.dif) / 2
+        xg_s, xg_a = r.att, r.dif
         p_win, p_draw, _ = outcome_probabilities(xg_s, xg_a)
         rows.append({"squadra": squadra, "xg_squadra": xg_s, "xg_avversario": xg_a,
                      "p_vittoria": p_win, "p_pareggio": p_draw, "in_casa": 0.5})
@@ -116,10 +132,10 @@ def future_rows(listone: pd.DataFrame, context: pd.DataFrame, giornata: int) -> 
     rows = rows.merge(context.drop(columns=["giornata"], errors="ignore"), on="squadra", how="left")
     rows["stagione"], rows["anno"], rows["giornata"] = CURRENT_SEASON, int(CURRENT_SEASON[:4]), giornata
     rows["giocato"], rows["titolare"], rows["subentrato_con_voto"] = False, False, False
-    rows["ammonito"], rows["bonus"] = False, False
+    rows["ammonito"], rows["espulso"], rows["bonus"] = False, False, False
     for col in ["fv", "v_fc", "fv_fc"]:
         rows[col] = np.nan
-    for col in ["gol", "rigori_segnati", "rigori_sbagliati", "assist"]:
+    for col in COMPONENTI_CONTEGGIO:
         rows[col] = 0
     rows["_futura"] = True
     return rows
@@ -179,12 +195,13 @@ def main() -> None:
     except Exception as exc:  # le quote sono un di più: senza, si usa la stima
         print(f"Quote non disponibili ({exc}), uso la stima dalla forza delle squadre.")
         odds = pd.DataFrame()
-    context = match_context(partite, ratings, odds, home_advantage(base))
+    context = match_context(partite, ratings, odds, home_advantage(base), league_average(base))
     rows = features_for(base, future_rows(listone, context, giornata))
-    pred = predict(models, rows)
-    rows["p_gioca_modello"] = pred["p_gioca"]
-    rows["fv_atteso"] = pred["fv_atteso"]
-    rows["p_bonus"] = pred["p_bonus"]
+    comp = predict_components(models, rows)
+    rows["p_gioca_modello"] = comp["p_gioca"]
+    rows["fv_atteso"] = comp["fv_std"]
+    rows["p_bonus"] = p_bonus(comp)
+    rows["comp_giornata"] = comp[COMPONENTI_ESPORTATE].round(4).to_dict("records")
 
     pct, squadre_sos, non_trovati = sos_start_probabilities(titolarita, listone)
     rows["p_titolare_sos"] = rows["id"].map(pct)
@@ -194,9 +211,10 @@ def main() -> None:
     neutral = neutral_context(ratings)
     season_rows = future_rows(listone, neutral.assign(avversario=None), giornata)
     season_rows = features_for(base, season_rows)
-    season_pred = predict(models, season_rows).set_index(season_rows["id"])
-    rows["p_gioca_stagione"] = rows["id"].map(season_pred["p_gioca"])
-    rows["fv_stagione"] = rows["id"].map(season_pred["fv_atteso"])
+    season_comp = predict_components(models, season_rows).set_index(season_rows["id"])
+    rows["p_gioca_stagione"] = rows["id"].map(season_comp["p_gioca"])
+    season_records = dict(zip(season_comp.index, season_comp[COMPONENTI_ESPORTATE].round(4).to_dict("records")))
+    rows["comp_stagione"] = rows["id"].map(season_records)
     current = base[(base["stagione"] == CURRENT_SEASON) & base["giocato"]]
     rows["presenze"] = rows["id"].map(current.groupby("id").size()).fillna(0).astype(int)
 
@@ -218,9 +236,10 @@ def export(rows: pd.DataFrame, context: pd.DataFrame, giornata: int, n_sos: int,
             "p_gioca": _round(r.p_gioca), "p_titolare_sos": None if pd.isna(r.p_titolare_sos) else int(r.p_titolare_sos),
             "fv_atteso": _round(r.fv_atteso, 2), "p_bonus": _round(r.p_bonus),
             "punteggio": _round(r.punteggio, 2),
-            "p_gioca_stagione": _round(r.p_gioca_stagione), "fv_stagione": _round(r.fv_stagione, 2),
+            "p_gioca_stagione": _round(r.p_gioca_stagione),
             "fantamedia": _round(r.stag_fantamedia, 2), "media_voto": _round(r.stag_media_voto, 2),
             "presenze": int(r.presenze),
+            "giornata": r.comp_giornata, "stagione": r.comp_stagione,
         }
         for r in rows.itertuples()
     ]
@@ -235,6 +254,7 @@ def export(rows: pd.DataFrame, context: pd.DataFrame, giornata: int, n_sos: int,
         "aggiornato": date.today().isoformat(),
         "giocatori_con_titolarita": n_sos,
         "nomi_titolarita_non_collegati": non_trovati,
+        "sd_voto": SD_VOTO,
         "partite": [{k: (_round(v) if isinstance(v, float) else v) for k, v in p.items()} for p in partite.to_dict("records")],
     }
     (WEB_DATA / "giocatori.json").write_text(json.dumps(giocatori, ensure_ascii=False), encoding="utf-8")
@@ -242,7 +262,7 @@ def export(rows: pd.DataFrame, context: pd.DataFrame, giornata: int, n_sos: int,
 
     archive = DATA_DIR / "predictions" / f"{CURRENT_SEASON}_g{giornata:02d}.csv"
     archive.parent.mkdir(parents=True, exist_ok=True)
-    pd.DataFrame(giocatori).to_csv(archive, index=False)
+    pd.DataFrame(giocatori).drop(columns=["giornata", "stagione"]).to_csv(archive, index=False)
     print(f"Giornata {giornata}: {len(giocatori)} giocatori, {n_sos} con titolarità SOS "
           f"({non_trovati} nomi non collegati). Esportato in {WEB_DATA}")
 

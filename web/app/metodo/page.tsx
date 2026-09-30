@@ -35,13 +35,31 @@ export default function MetodoPage() {
           moduli ammessi, quella con la schierabilità totale più alta.
         </p>
 
+        <h2>Le regole della tua lega</h2>
+        <p>
+          Il fantavoto di fantacalcio.it è voto + 3 per gol e rigore segnato, +1 per assist, −1 per gol
+          subito, −2 per autorete, ±3 per rigore sbagliato o parato, −0,5 per ammonizione e −1 per
+          espulsione: l&apos;abbiamo verificato su tutti i 55.000 voti dal 2021/22. Per questo prevediamo anche
+          ogni voce separatamente (gol, assist, cartellini, gol subiti) e nella pagina della lega ricalcoliamo
+          il fantavoto con i tuoi bonus. La probabilità di porta inviolata viene dai gol attesi
+          dell&apos;avversario nelle quote; il modificatore difesa usa i voti puri previsti di portiere e
+          difensori, con la loro variabilità reale.
+        </p>
+
         <h2>Scambi</h2>
         <p>
-          Per gli scambi conta il resto della stagione, non la prossima partita: usiamo probabilità di
-          giocare e fantavoto contro un avversario medio. Il valore di uno scambio per una squadra è quanto
-          migliora la sua formazione migliore, più un piccolo peso per le riserve che coprono infortuni e
-          turnover. Un giocatore forte vale poco a chi lo terrebbe in panchina: per questo esistono scambi
-          che convengono a entrambi.
+          Conta il resto della stagione, non la prossima partita: per ogni giocatore usiamo probabilità di
+          giocare e fantavoto contro un avversario medio. Il valore di uno scambio per te è quanto migliora la
+          tua formazione migliore con le regole della lega, modificatore compreso, più un piccolo peso per le
+          riserve.
+        </p>
+        <p>
+          L&apos;altro fantallenatore però non vede il nostro modello: guarda il valore di mercato (FVM) e la sua
+          squadra. Per questo proponiamo solo scambi in cui il valore di mercato che riceve è almeno pari a
+          quello che cede (con i valori pesati per qualità: un campione vale più di due giocatori medi) e la sua
+          formazione non peggiora in modo evidente. Il vantaggio per te nasce dove il nostro modello e il
+          mercato non sono d&apos;accordo, o dove un giocatore vale di più nella tua rosa che nella sua. È lo
+          stesso principio di strumenti come KeepTradeCut e il Trade Finder di FantasyPros.
         </p>
 
         <h2>Il modello</h2>
