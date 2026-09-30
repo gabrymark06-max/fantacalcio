@@ -6,3 +6,6 @@ __pycache__/
 
 # Dati scaricati: restano in locale, non vanno ripubblicati nel repository
 /data/
+
+# Log degli aggiornamenti automatici
+/logs/
