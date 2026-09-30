@@ -14,3 +14,5 @@ __pycache__/
 /web/data/foto-personali.json
 # Probabili formazioni e note di SOS Fanta: contenuti loro, solo in locale
 /web/data/probabili.json
+# Loghi delle squadre (marchi delle società): non su GitHub, sì sul sito pubblicato
+/web/data/loghi.json

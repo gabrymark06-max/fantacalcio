@@ -1,10 +1,10 @@
-// File che restano solo sul proprio PC (esclusi da git): foto di Transfermarkt
-// (fanta_ai.scraping.foto_tm) e probabili formazioni di SOS Fanta (fanta_ai.probabili).
-// Se mancano (es. sul sito pubblicato) ne crea di vuoti: il sito usa le foto di Commons e
-// ricava le formazioni dal modello.
+// File esclusi da git: foto di Transfermarkt (fanta_ai.scraping.foto_tm), loghi e probabili
+// formazioni di SOS Fanta (fanta_ai.probabili). Le foto e i loghi vanno anche su Vercel, le
+// formazioni no (web/.vercelignore). Se un file manca ne crea uno vuoto: il sito usa le foto
+// di Commons, le sigle al posto dei loghi e ricava le formazioni dal modello.
 import { existsSync, writeFileSync } from "node:fs";
 
-for (const nome of ["foto-personali.json", "probabili.json"]) {
+for (const nome of ["foto-personali.json", "probabili.json", "loghi.json"]) {
   const file = new URL(`../data/${nome}`, import.meta.url);
   if (!existsSync(file)) writeFileSync(file, "{}\n");
 }

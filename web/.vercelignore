@@ -1,6 +1,6 @@
-# Restano solo sul proprio PC (contenuti di altri: foto di Transfermarkt, loghi e formazioni di
-# SOS Fanta). Sul sito pubblicato scripts/file-locali.mjs crea file vuoti al loro posto.
-data/foto-personali.json
+# Le probabili formazioni e le note di SOS Fanta restano solo sul proprio PC: sul sito
+# pubblicato scripts/file-locali.mjs crea un file vuoto e le formazioni si stimano dal modello.
+# Foto di Transfermarkt (foto-personali.json) e loghi (loghi.json) invece vengono pubblicati.
 data/probabili.json
 .next
 node_modules

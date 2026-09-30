@@ -58,6 +58,9 @@ def main() -> None:
     out = {f"{p['casa']}-{p['trasferta']}": collega_partita(p, listone) for p in partite}
     titolari = [t for p in out.values() for l in p["lati"].values() for t in l["titolari"]]
     (WEB_DATA / "probabili.json").write_text(json.dumps(out, ensure_ascii=False), encoding="utf-8")
+    # i loghi a parte: vanno anche sul sito pubblicato, le formazioni no
+    loghi = {p[lato]: p["loghi"][lato] for p in partite for lato in ("casa", "trasferta") if p.get("loghi", {}).get(lato)}
+    (WEB_DATA / "loghi.json").write_text(json.dumps(loghi, ensure_ascii=False, indent=0), encoding="utf-8")
     print(f"Probabili formazioni: {len(out)} partite, titolari collegati {sum(t['id'] is not None for t in titolari)}/{len(titolari)}")
 
 

@@ -14,6 +14,7 @@ import type { Giocatore, Partita } from "@/lib/types";
  */
 
 interface Props {
+  loghi: Record<string, string>;
   partite: Partita[];
   giocatori: Giocatore[];
   probabili: Record<string, PartitaProbabile>;
@@ -44,18 +45,18 @@ function Distintivo({ squadra, logo, grande = false }: { squadra: string; logo?:
   );
 }
 
-export function Probabili({ partite, giocatori, probabili }: Props) {
+export function Probabili({ partite, giocatori, probabili, loghi: loghiSquadre }: Props) {
   const [scelta, setScelta] = useState(0);
   const perId = useMemo(() => new Map(giocatori.map((g) => [g.id, g])), [giocatori]);
   const loghi = useMemo(() => {
-    const out: Record<string, string> = {};
+    const out: Record<string, string> = { ...loghiSquadre };
     for (const [chiave, x] of Object.entries(probabili)) {
       const [c, t] = chiave.split("-");
       if (x.loghi?.casa) out[c] = x.loghi.casa;
       if (x.loghi?.trasferta) out[t] = x.loghi.trasferta;
     }
     return out;
-  }, [probabili]);
+  }, [probabili, loghiSquadre]);
   const p = partite[scelta];
   const sos = probabili[`${p.casa}-${p.trasferta}`];
   const [casa, trasferta] = useMemo(() => {

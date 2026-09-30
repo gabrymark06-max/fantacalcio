@@ -1,5 +1,5 @@
 import { Probabili } from "@/components/Probabili";
-import { giocatori, giornata, probabili } from "@/lib/data";
+import { giocatori, giornata, loghi, probabili } from "@/lib/data";
 import { data, intervallo } from "@/lib/format";
 
 export default function Home() {
@@ -19,7 +19,7 @@ export default function Home() {
         </p>
       </section>
 
-      <Probabili partite={giornata.partite} giocatori={giocatori} probabili={probabili} />
+      <Probabili partite={giornata.partite} giocatori={giocatori} probabili={probabili} loghi={loghi} />
     </>
   );
 }
