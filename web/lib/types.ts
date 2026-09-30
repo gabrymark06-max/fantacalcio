@@ -1,0 +1,86 @@
+export type Ruolo = "P" | "D" | "C" | "A";
+
+export const RUOLI: Ruolo[] = ["P", "D", "C", "A"];
+
+export const NOMI_RUOLO: Record<Ruolo, string> = {
+  P: "Portieri",
+  D: "Difensori",
+  C: "Centrocampisti",
+  A: "Attaccanti",
+};
+
+/** Una riga di web/data/giocatori.json (generato da fanta_ai.predict). */
+export interface Giocatore {
+  id: number;
+  nome: string;
+  ruolo: Ruolo;
+  squadra: string;
+  avversario: string;
+  casa: boolean;
+  qa: number | null;
+  fvm: number | null;
+  p_gioca: number;
+  p_titolare_sos: number | null;
+  fv_atteso: number;
+  p_bonus: number;
+  punteggio: number;
+  p_gioca_stagione: number | null;
+  fv_stagione: number | null;
+  fantamedia: number | null;
+  media_voto: number | null;
+  presenze: number;
+}
+
+export interface Partita {
+  casa: string;
+  trasferta: string;
+  data: string;
+  ora: string;
+  p1: number;
+  px: number;
+  p2: number;
+  xg_casa: number;
+  xg_trasferta: number;
+  fonte_contesto: "quote" | "stima";
+}
+
+export interface Giornata {
+  stagione: string;
+  giornata: number;
+  aggiornato: string;
+  giocatori_con_titolarita: number;
+  nomi_titolarita_non_collegati: number;
+  partite: Partita[];
+}
+
+export interface StagioneBacktest {
+  stagione: string;
+  fv_mae_modello: number;
+  fv_mae_baseline: number;
+  fv_spearman_modello: number;
+  fv_spearman_baseline: number;
+  gioca_brier_modello: number;
+  gioca_brier_baseline: number;
+  rose_simulate: number;
+  punti_giornata_modello: number;
+  punti_giornata_baseline: number;
+  punti_giornata_differenza: number;
+}
+
+export interface SettimanaValutata {
+  stagione: string;
+  giornata: number;
+  giocatori_con_voto: number;
+  mae_modello: number;
+  mae_fantamedia: number;
+  top10_fv_medio: number;
+  top10_hanno_giocato: number;
+  fv_medio_tutti: number;
+  sicuri: number;
+  sicuri_hanno_giocato: number | null;
+}
+
+export interface Accuratezza {
+  backtest: StagioneBacktest[];
+  settimane: SettimanaValutata[];
+}

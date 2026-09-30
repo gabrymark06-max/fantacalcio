@@ -6,8 +6,8 @@ Passi:
      altrimenti stimato dalla forza delle squadre (gol attesi medi nelle ultime 10);
   3. modello allenato su tutto lo storico → p_gioca, fv_atteso, p_bonus;
   4. probabilità di giocare corretta con le percentuali di titolarità di SOS Fanta;
-  5. valore "da qui a fine stagione" (contesto neutro) per rose e scambi;
-  6. JSON per il sito in web/public/data/ e copia delle previsioni in
+  5. probabilità di giocare e fantavoto "da qui a fine stagione" (contesto neutro) per scambi;
+  6. JSON per il sito in web/data/ e copia delle previsioni in
      data/predictions/ per misurare l'accuratezza a giornata giocata.
 
 Uso:
@@ -33,7 +33,7 @@ from fanta_ai.scraping.quote import outcome_probabilities, parse_quote
 from fanta_ai.teams import canonical
 
 ROOT = Path(__file__).resolve().parents[2]
-WEB_DATA = ROOT / "web" / "public" / "data"
+WEB_DATA = ROOT / "web" / "data"
 FIXTURES_URL = "https://www.football-data.co.uk/fixtures.csv"
 CURRENT_SEASON = "2026-27"
 
@@ -195,7 +195,8 @@ def main() -> None:
     season_rows = future_rows(listone, neutral.assign(avversario=None), giornata)
     season_rows = features_for(base, season_rows)
     season_pred = predict(models, season_rows).set_index(season_rows["id"])
-    rows["valore_stagione"] = rows["id"].map(season_pred["p_gioca"] * season_pred["fv_atteso"])
+    rows["p_gioca_stagione"] = rows["id"].map(season_pred["p_gioca"])
+    rows["fv_stagione"] = rows["id"].map(season_pred["fv_atteso"])
     current = base[(base["stagione"] == CURRENT_SEASON) & base["giocato"]]
     rows["presenze"] = rows["id"].map(current.groupby("id").size()).fillna(0).astype(int)
 
@@ -216,7 +217,8 @@ def export(rows: pd.DataFrame, context: pd.DataFrame, giornata: int, n_sos: int,
             "qa": None if pd.isna(r.qa) else int(r.qa), "fvm": None if pd.isna(r.fvm) else int(r.fvm),
             "p_gioca": _round(r.p_gioca), "p_titolare_sos": None if pd.isna(r.p_titolare_sos) else int(r.p_titolare_sos),
             "fv_atteso": _round(r.fv_atteso, 2), "p_bonus": _round(r.p_bonus),
-            "punteggio": _round(r.punteggio, 2), "valore_stagione": _round(r.valore_stagione, 2),
+            "punteggio": _round(r.punteggio, 2),
+            "p_gioca_stagione": _round(r.p_gioca_stagione), "fv_stagione": _round(r.fv_stagione, 2),
             "fantamedia": _round(r.stag_fantamedia, 2), "media_voto": _round(r.stag_media_voto, 2),
             "presenze": int(r.presenze),
         }

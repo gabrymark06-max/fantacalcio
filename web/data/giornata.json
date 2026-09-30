@@ -1,0 +1,129 @@
+{
+ "stagione": "2026-27",
+ "giornata": 6,
+ "aggiornato": "2026-09-30",
+ "giocatori_con_titolarita": 447,
+ "nomi_titolarita_non_collegati": 3,
+ "partite": [
+  {
+   "casa": "Genoa",
+   "trasferta": "Fiorentina",
+   "data": "2026-10-10",
+   "ora": "15:00",
+   "p1": 0.386,
+   "px": 0.263,
+   "p2": 0.351,
+   "xg_casa": 1.341,
+   "xg_trasferta": 1.265,
+   "fonte_contesto": "stima"
+  },
+  {
+   "casa": "Inter",
+   "trasferta": "Parma",
+   "data": "2026-10-10",
+   "ora": "18:00",
+   "p1": 0.666,
+   "px": 0.196,
+   "p2": 0.138,
+   "xg_casa": 2.099,
+   "xg_trasferta": 0.833,
+   "fonte_contesto": "stima"
+  },
+  {
+   "casa": "Napoli",
+   "trasferta": "Frosinone",
+   "data": "2026-10-10",
+   "ora": "20:45",
+   "p1": 0.538,
+   "px": 0.237,
+   "p2": 0.225,
+   "xg_casa": 1.73,
+   "xg_trasferta": 1.03,
+   "fonte_contesto": "stima"
+  },
+  {
+   "casa": "Como",
+   "trasferta": "Roma",
+   "data": "2026-10-11",
+   "ora": "12:30",
+   "p1": 0.444,
+   "px": 0.254,
+   "p2": 0.302,
+   "xg_casa": 1.51,
+   "xg_trasferta": 1.202,
+   "fonte_contesto": "stima"
+  },
+  {
+   "casa": "Lazio",
+   "trasferta": "Monza",
+   "data": "2026-10-11",
+   "ora": "15:00",
+   "p1": 0.561,
+   "px": 0.233,
+   "p2": 0.206,
+   "xg_casa": 1.77,
+   "xg_trasferta": 0.974,
+   "fonte_contesto": "stima"
+  },
+  {
+   "casa": "Lecce",
+   "trasferta": "Bologna",
+   "data": "2026-10-11",
+   "ora": "15:00",
+   "p1": 0.403,
+   "px": 0.267,
+   "p2": 0.331,
+   "xg_casa": 1.347,
+   "xg_trasferta": 1.195,
+   "fonte_contesto": "stima"
+  },
+  {
+   "casa": "Sassuolo",
+   "trasferta": "Milan",
+   "data": "2026-10-11",
+   "ora": "18:00",
+   "p1": 0.313,
+   "px": 0.257,
+   "p2": 0.43,
+   "xg_casa": 1.209,
+   "xg_trasferta": 1.462,
+   "fonte_contesto": "stima"
+  },
+  {
+   "casa": "Cagliari",
+   "trasferta": "Juventus",
+   "data": "2026-10-11",
+   "ora": "20:45",
+   "p1": 0.251,
+   "px": 0.253,
+   "p2": 0.495,
+   "xg_casa": 1.034,
+   "xg_trasferta": 1.561,
+   "fonte_contesto": "stima"
+  },
+  {
+   "casa": "Atalanta",
+   "trasferta": "Venezia",
+   "data": "2026-10-12",
+   "ora": "18:30",
+   "p1": 0.52,
+   "px": 0.241,
+   "p2": 0.238,
+   "xg_casa": 1.69,
+   "xg_trasferta": 1.063,
+   "fonte_contesto": "stima"
+  },
+  {
+   "casa": "Torino",
+   "trasferta": "Udinese",
+   "data": "2026-10-12",
+   "ora": "20:45",
+   "p1": 0.397,
+   "px": 0.265,
+   "p2": 0.338,
+   "xg_casa": 1.348,
+   "xg_trasferta": 1.224,
+   "fonte_contesto": "stima"
+  }
+ ]
+}

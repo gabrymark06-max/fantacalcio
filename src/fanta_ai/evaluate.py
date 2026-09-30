@@ -4,7 +4,7 @@ Per ogni giornata già giocata di cui esiste data/predictions/{stagione}_gNN.csv
   - errore medio sul fantavoto di chi ha giocato, modello contro fantamedia;
   - quanto hanno fatto davvero i 10 giocatori più consigliati;
   - quanti dei giocatori dati "sicuri" (p_gioca >= 0.8) hanno davvero preso voto.
-Insieme al backtest sulle stagioni passate finisce in web/public/data/accuratezza.json.
+Insieme al backtest sulle stagioni passate finisce in web/data/accuratezza.json.
 
 Uso:
     uv run python -m fanta_ai.evaluate

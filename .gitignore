@@ -5,4 +5,4 @@ __pycache__/
 .env
 
 # Dati scaricati: restano in locale, non vanno ripubblicati nel repository
-data/
+/data/
