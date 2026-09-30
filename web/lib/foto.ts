@@ -2,7 +2,8 @@
  * Foto vere dei giocatori, da Wikimedia Commons (licenze libere: CC BY, CC BY-SA, pubblico
  * dominio). Raccolte da fanta_ai.scraping.foto in web/data/foto.json, con autore e licenza
  * da citare e la posizione del viso per ritagliarle in un cerchio.
- * Chi non ha una foto libera viene mostrato con le iniziali.
+ * Sul proprio PC si aggiungono le foto di Transfermarkt (fonte "transfermarkt", solo uso
+ * personale, mai pubblicate). Chi non ha nessuna foto viene mostrato con le iniziali.
  */
 
 export interface Foto {
@@ -18,6 +19,7 @@ export interface Foto {
   autore: string;
   licenza: string;
   pagina: string;
+  fonte?: "transfermarkt";
 }
 
 const limita = (x: number, min: number, max: number) => Math.min(max, Math.max(min, x));

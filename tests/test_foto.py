@@ -48,3 +48,20 @@ def test_somiglianza_nome_completo_e_cognome():
     # stessa data di nascita ma cognome diverso: non è lui
     assert somiglianza("Mile Svilar", "svilar", "mile petrovic") == 0
     assert somiglianza("Lautaro Martinez", "martinez", "lautaro martinez") == 2
+
+
+def test_rosa_transfermarkt_e_abbinamento():
+    from fanta_ai.scraping.foto_tm import abbina_tm, parse_rosa
+
+    pagina = (
+        '<img src="data:x" data-src="https://img.a.transfermarkt.technology/portrait/medium/59377-1667548362.jpg?lm=4711"'
+        ' title="David de Gea" class="lazy" /></td><td class="hauptlink">'
+        '<a href="/david-de-gea/profil/spieler/59377">\n David de Gea<span title="Capitano">&nbsp;</span></a>'
+        '</td></tr><tr><td>Portiere</td></tr></table></td><td class="zentriert">07/11/1990 (35)</td>'
+    )
+    rosa = parse_rosa(pagina, "Fiorentina")
+    assert rosa[0]["nome"] == "David de Gea" and rosa[0]["nascita"] == "1990-11-07"
+    assert "/portrait/big/59377-" in rosa[0]["img"]
+    assert abbina_tm("De Gea", "Fiorentina", "David De Gea", "1990-11-07", rosa)["tm"] == "59377"
+    # data di nascita diversa e squadra diversa: nessun abbinamento
+    assert abbina_tm("De Gea", "Roma", "David De Gea", "1991-01-01", rosa) is None

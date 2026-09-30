@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/foto-personali.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/foto-personali.mjs",
     "build": "next build",
     "test": "node --test --experimental-strip-types lib/*.test.ts"
   },

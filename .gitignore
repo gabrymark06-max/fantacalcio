@@ -9,3 +9,6 @@ __pycache__/
 
 # Log degli aggiornamenti automatici
 /logs/
+
+# Foto protette da diritto d'autore (Transfermarkt): solo per uso personale, mai pubblicate
+/web/data/foto-personali.json

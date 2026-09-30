@@ -32,11 +32,12 @@ export function Faccia({ g, grande = false }: { g: Giocatore; grande?: boolean }
 export function CreditiFoto({ giocatori }: { giocatori: Giocatore[] }) {
   const conFoto = giocatori.filter((g) => foto[String(g.id)]);
   if (conFoto.length === 0) return null;
+  const personali = conFoto.filter((g) => foto[String(g.id)].fonte === "transfermarkt").length;
   return (
     <details className="crediti-foto">
       <summary>
-        Foto: Wikimedia Commons ({conFoto.length} su {giocatori.length}; chi non ha una foto con licenza libera è mostrato con le
-        iniziali)
+        Foto: {conFoto.length} su {giocatori.length}, da Wikimedia Commons
+        {personali > 0 && <> e Transfermarkt ({personali}, solo su questo PC)</>}; chi non ha una foto è mostrato con le iniziali
       </summary>
       <ul>
         {conFoto.map((g) => {
