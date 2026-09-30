@@ -13,6 +13,9 @@ import { NOMI_RUOLO, type Giocatore, type Ruolo } from "@/lib/types";
 /** Dall'alto in basso: attacco, centrocampo, difesa, porta. */
 const RIGHE: Ruolo[] = ["A", "C", "D", "P"];
 
+/** Figurina sul campo: stesso formato dei ritratti di Transfermarkt (300×390), che entrano interi. */
+const FORMATO_FIGURINA = 1.3;
+
 export function Faccia({ g, grande = false }: { g: Giocatore; grande?: boolean }) {
   const [errore, setErrore] = useState(false);
   const f = foto[String(g.id)];
@@ -20,7 +23,7 @@ export function Faccia({ g, grande = false }: { g: Giocatore; grande?: boolean }
     <span className={`faccia faccia-${g.ruolo}${grande ? " grande" : ""}`} aria-hidden="true">
       {f && !errore ? (
         // eslint-disable-next-line @next/next/no-img-element -- immagine esterna, niente ottimizzazione
-        <img src={f.url} alt="" loading="lazy" decoding="async" style={ritaglio(f)} onError={() => setErrore(true)} />
+        <img src={f.url} alt="" loading="lazy" decoding="async" style={ritaglio(f, grande ? FORMATO_FIGURINA : 1)} onError={() => setErrore(true)} />
       ) : (
         <span className="iniziali">{iniziali(g.nome)}</span>
       )}
