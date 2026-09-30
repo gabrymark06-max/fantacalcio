@@ -76,6 +76,10 @@ export default function MetodoPage() {
           <li>Risultati e quote medie dei bookmaker: football-data.co.uk.</li>
           <li>Probabilità di titolarità della giornata: SOS Fanta.</li>
           <li>
+            Foto dei giocatori: Wikimedia Commons, trovate tramite Wikidata, con licenze libere. Autore e licenza
+            di ogni foto sono indicati sotto la formazione; chi non ha una foto libera è mostrato con le iniziali.
+          </li>
+          <li>
             Parte della raccolta dati è adattata da FantaDraft (github.com/lucianomurr/FantaDraft), progetto
             open source con licenza MIT.
           </li>

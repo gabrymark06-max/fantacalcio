@@ -3,7 +3,8 @@
 import { useState } from "react";
 
 import { stato } from "@/components/Listone";
-import { iniziali, urlFoto } from "@/lib/foto";
+import { foto } from "@/lib/data";
+import { iniziali, ritaglio } from "@/lib/foto";
 import { pct, voto } from "@/lib/format";
 import type { Contesto, Formazione } from "@/lib/lineup";
 import { fantavotoRegole } from "@/lib/rules";
@@ -14,15 +15,40 @@ const RIGHE: Ruolo[] = ["A", "C", "D", "P"];
 
 export function Faccia({ g, grande = false }: { g: Giocatore; grande?: boolean }) {
   const [errore, setErrore] = useState(false);
+  const f = foto[String(g.id)];
   return (
     <span className={`faccia faccia-${g.ruolo}${grande ? " grande" : ""}`} aria-hidden="true">
-      {errore ? (
-        <span className="iniziali">{iniziali(g.nome)}</span>
-      ) : (
+      {f && !errore ? (
         // eslint-disable-next-line @next/next/no-img-element -- immagine esterna, niente ottimizzazione
-        <img src={urlFoto(g.id)} alt="" loading="lazy" decoding="async" onError={() => setErrore(true)} />
+        <img src={f.url} alt="" loading="lazy" decoding="async" style={ritaglio(f)} onError={() => setErrore(true)} />
+      ) : (
+        <span className="iniziali">{iniziali(g.nome)}</span>
       )}
     </span>
+  );
+}
+
+/** Crediti delle foto mostrate: le licenze libere chiedono di citare autore e licenza. */
+export function CreditiFoto({ giocatori }: { giocatori: Giocatore[] }) {
+  const conFoto = giocatori.filter((g) => foto[String(g.id)]);
+  if (conFoto.length === 0) return null;
+  return (
+    <details className="crediti-foto">
+      <summary>
+        Foto: Wikimedia Commons ({conFoto.length} su {giocatori.length}; chi non ha una foto con licenza libera è mostrato con le
+        iniziali)
+      </summary>
+      <ul>
+        {conFoto.map((g) => {
+          const f = foto[String(g.id)];
+          return (
+            <li key={g.id}>
+              {g.nome}: <a href={f.pagina}>{f.autore}</a>, {f.licenza}
+            </li>
+          );
+        })}
+      </ul>
+    </details>
   );
 }
 

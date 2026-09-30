@@ -1041,3 +1041,27 @@ thead th {
     -webkit-box-orient: vertical;
   }
 }
+
+/* ---------- Foto vere nel cerchio ---------- */
+
+.faccia {
+  position: relative;
+}
+
+.faccia img {
+  position: absolute;
+  margin: 0;
+  height: auto;
+}
+
+.crediti-foto {
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  color: var(--inchiostro-2);
+}
+
+.crediti-foto ul {
+  columns: 18rem;
+  column-gap: 1.5rem;
+  padding-left: 1.1rem;
+}

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { Campo, Faccia } from "@/components/Campo";
+import { Campo, CreditiFoto, Faccia } from "@/components/Campo";
 import { legaEsempio, useLega, roseDellaLega, type LegaSalvata } from "@/components/legaStore";
 
 import { stato } from "@/components/Listone";
@@ -531,6 +531,7 @@ function Formazione({ rosa, giornata, ctx }: { rosa: Giocatore[]; giornata: numb
           <GiocatoreRiga key={g.id} g={g} ctx={ctx} />
         ))}
       </ul>
+      <CreditiFoto giocatori={[...f.titolari, ...f.panchina]} />
     </section>
   );
 }

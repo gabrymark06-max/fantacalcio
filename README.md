@@ -42,6 +42,8 @@ uv run python -m fanta_ai.backtest     # rigenera reports/backtest.json
 | Prossima giornata | `scraping/calendario.py` | fantacalcio.it |
 | Risultati, quote, gol attesi | `scraping/quote.py` | football-data.co.uk |
 | Probabilità di titolarità | `scraping/titolarita.py` | SOS Fanta |
+| Nome completo e data di nascita | `scraping/anagrafica.py` | fantacalcio.it |
+| Foto vere dei giocatori (licenze libere) | `scraping/foto.py` | Wikidata, Wikimedia Commons |
 | Dataset giocatore × giornata (solo dati passati) | `dataset.py` | |
 | Modelli: p_gioca, fv_atteso, p_bonus | `model.py` | |
 | Prova sulle stagioni passate | `backtest.py` | |
@@ -62,6 +64,15 @@ a partire dalla giornata 6 del 2026/27).
 - Scambi (`web/lib/trades.ts`): guadagno per me = punti attesi della mia formazione migliore da qui a fine
   stagione; accettazione stimata da equità sul valore di mercato FVM (convesso, come KeepTradeCut) e
   dal cambiamento della loro formazione. Solo scambi con guadagno ≥ 0,15 a giornata e accettazione ≥ 0,45.
+
+## Foto dei giocatori
+
+`uv run python -m fanta_ai.scraping.anagrafica` e poi `uv run python -m fanta_ai.scraping.foto`
+(da rifare quando cambia il listone). Ogni giocatore è riconosciuto su Wikidata per nome e data
+di nascita; la foto viene da Wikimedia Commons con autore e licenza (mostrati sotto la
+formazione) e il viso è ritagliato con il rilevatore YuNet di OpenCV. Chi non ha una foto con
+licenza libera è mostrato con le iniziali. Prima di pubblicare, mettere un contatto vero in
+`USER_AGENT` (le regole di Wikimedia lo chiedono).
 
 ## Aggiornamento automatico
 
