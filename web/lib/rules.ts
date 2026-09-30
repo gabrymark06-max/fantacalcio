@@ -218,12 +218,42 @@ export function bonusCapitano(g: Giocatore, r: Regole, orizzonte: Orizzonte, sdV
 export interface SceltaCapitano {
   capitano: Giocatore;
   vice: Giocatore;
+  /** Probabilità che capitano e vice prendano il voto più alto tra i titolari. */
+  pMigliorCapitano: number;
+  pMigliorVice: number;
   /** Modificatore atteso: del capitano se gioca, altrimenti del vice. */
   atteso: number;
 }
 
+const densitaNormale = (z: number) => Math.exp(-(z * z) / 2) / Math.sqrt(2 * Math.PI);
+
 /**
- * Capitano e vice che massimizzano il modificatore atteso tra i titolari:
+ * Probabilità che ogni titolare prenda il voto puro più alto della formazione (chi non gioca
+ * non prende voto). Voti normali indipendenti, integrati su una griglia:
+ * P(i migliore) = p_i ∫ f_i(x) Π_{j≠i} [(1 − p_j) + p_j F_j(x)] dx.
+ */
+export function probabilitaMigliorVoto(titolari: Giocatore[], orizzonte: Orizzonte, sdVoto: Record<Ruolo, number>): number[] {
+  const voci = titolari.map((g) => ({ media: componenti(g, orizzonte).voto, sd: sdVoto[g.ruolo], p: pGioca(g, orizzonte) }));
+  const DA = 3.5;
+  const A = 9.5;
+  const PASSI = 120;
+  const dx = (A - DA) / PASSI;
+  const out = voci.map(() => 0);
+  for (let k = 0; k <= PASSI; k++) {
+    const x = DA + k * dx;
+    const q = voci.map((v) => 1 - v.p + v.p * cdfNormale((x - v.media) / v.sd));
+    const prodotto = q.reduce((a, b) => a * b, 1);
+    voci.forEach((v, i) => {
+      if (q[i] <= 0) return;
+      out[i] += (v.p * densitaNormale((x - v.media) / v.sd) / v.sd) * (prodotto / q[i]) * dx;
+    });
+  }
+  return out;
+}
+
+/**
+ * Capitano: il titolare con la probabilità più alta di prendere il voto migliore della
+ * squadra; vice il secondo. Il valore atteso usa le fasce della lega:
  * p(capitano) × bonus(capitano) + (1 − p(capitano)) × p(vice) × bonus(vice).
  */
 export function sceltaCapitano(
@@ -233,20 +263,12 @@ export function sceltaCapitano(
   sdVoto: Record<Ruolo, number>,
 ): SceltaCapitano | null {
   if (!r.capitano?.attivo || titolari.length < 2) return null;
-  const voci = titolari.map((g) => {
-    const p = pGioca(g, orizzonte);
-    return { g, p, bonus: bonusCapitano(g, r, orizzonte, sdVoto) };
-  });
-  // il vice conta solo se il capitano non gioca: è chi ha il bonus atteso più alto tra gli altri
-  const viceDi = (c: (typeof voci)[number]) =>
-    voci.filter((v) => v !== c).reduce((a, b) => (b.p * b.bonus > a.p * a.bonus ? b : a));
-  let migliore: SceltaCapitano | null = null;
-  for (const c of voci) {
-    const v = viceDi(c);
-    const atteso = c.p * c.bonus + (1 - c.p) * v.p * v.bonus;
-    if (!migliore || atteso > migliore.atteso) migliore = { capitano: c.g, vice: v.g, atteso };
-  }
-  return migliore;
+  const pMiglior = probabilitaMigliorVoto(titolari, orizzonte, sdVoto);
+  const ordine = titolari.map((g, i) => ({ g, p: pMiglior[i] })).sort((a, b) => b.p - a.p);
+  const [c, v] = ordine;
+  const pc = pGioca(c.g, orizzonte);
+  const atteso = pc * bonusCapitano(c.g, r, orizzonte, sdVoto) + (1 - pc) * pGioca(v.g, orizzonte) * bonusCapitano(v.g, r, orizzonte, sdVoto);
+  return { capitano: c.g, vice: v.g, pMigliorCapitano: c.p, pMigliorVice: v.p, atteso };
 }
 
 export function pGioca(g: Giocatore, orizzonte: Orizzonte): number {

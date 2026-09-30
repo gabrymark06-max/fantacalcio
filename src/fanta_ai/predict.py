@@ -52,6 +52,13 @@ COMPONENTI_ESPORTATE = [
 ]
 
 
+def in_serie_a(listone: pd.DataFrame) -> pd.DataFrame:
+    """Solo chi gioca ancora in Serie A: chi è andato via resta nel listone con un asterisco."""
+    if "fuori_gioco" not in listone:
+        return listone
+    return listone[~listone["fuori_gioco"].astype(bool)].reset_index(drop=True)
+
+
 def team_ratings(base: pd.DataFrame, last_n: int = 10) -> pd.DataFrame:
     """Gol attesi fatti/subiti medi (dalle quote) nelle ultime `last_n` partite di ogni squadra."""
     tm = (
@@ -199,7 +206,7 @@ def combine_play_probability(df: pd.DataFrame, pct: dict[int, int], squadre_sos:
 
 
 def main() -> None:
-    listone = pd.read_csv(DATA_DIR / "raw" / "listone.csv")
+    listone = in_serie_a(pd.read_csv(DATA_DIR / "raw" / "listone.csv"))
     partite = json.loads((DATA_DIR / "raw" / "prossima_giornata.json").read_text(encoding="utf-8"))
     titolarita_path = DATA_DIR / "raw" / "titolarita.json"
     titolarita = json.loads(titolarita_path.read_text(encoding="utf-8")) if titolarita_path.exists() else []

@@ -3,6 +3,8 @@
 Fonte: https://www.fantacalcio.it/quotazioni-fantacalcio — la pagina contiene tutta la
 tabella dei giocatori (<tr class="player-row">), senza login. Per ogni giocatore:
 id ufficiale, nome, ruolo Classic, squadra attuale, quotazione iniziale/attuale, FVM.
+Chi ha lasciato la Serie A resta nella tabella con un asterisco (<span class="out-of-game">):
+colonna `fuori_gioco`, esclusi da previsioni e sito.
 
 Uso:
     uv run python -m fanta_ai.scraping.listone
@@ -49,6 +51,7 @@ def parse_listone(html: str) -> list[dict]:
                 "qi": _int(cells.get("c_qi")),
                 "qa": _int(cells.get("c_qa")),
                 "fvm": _int(cells.get("c_fvm")),
+                "fuori_gioco": tr.select_one(".out-of-game") is not None,
             }
         )
     return rows
@@ -62,7 +65,8 @@ def main() -> None:
     out = DATA_DIR / "raw" / "listone.csv"
     out.parent.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(rows).to_csv(out, index=False)
-    print(f"Listone: {len(rows)} giocatori salvati in {out}")
+    fuori = sum(r["fuori_gioco"] for r in rows)
+    print(f"Listone: {len(rows)} giocatori ({fuori} non più in Serie A) salvati in {out}")
 
 
 if __name__ == "__main__":

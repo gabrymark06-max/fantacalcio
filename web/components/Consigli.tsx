@@ -1,13 +1,62 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { Faccia } from "@/components/Campo";
+import { roseDellaLega, useLega } from "@/components/legaStore";
 import { conSegno, due, pct, voto } from "@/lib/format";
-import { punteggio, type Contesto, type Formazione } from "@/lib/lineup";
+import { migliorFormazione, punteggio, type Contesto, type Formazione } from "@/lib/lineup";
 import { componenti, fantavotoRegole, pGioca } from "@/lib/rules";
-import { suggerisciSvincolati, type Svincolo } from "@/lib/svincolati";
-import { NOMI_RUOLO, RUOLI, type Giocatore } from "@/lib/types";
+import { liberi as svincolatiDellaLega, suggerisciSvincolati, type Svincolo } from "@/lib/svincolati";
+import { NOMI_RUOLO, RUOLI, type Giocatore, type Ruolo } from "@/lib/types";
+
+// ---------- Pagine: servono la lega importata e la propria squadra ----------
+
+interface PropsPagina {
+  giocatori: Giocatore[];
+  sdVoto: Record<Ruolo, number>;
+}
+
+function useMiaLega(giocatori: Giocatore[], sdVoto: Record<Ruolo, number>) {
+  const perId = useMemo(() => new Map(giocatori.map((g) => [g.id, g])), [giocatori]);
+  const { lega, caricata } = useLega(giocatori);
+  if (!caricata) return { stato: "attesa" as const };
+  if (!lega) return { stato: "senza-lega" as const };
+  const { mia, altre } = roseDellaLega(lega, perId);
+  if (!mia) return { stato: "senza-squadra" as const };
+  const ctx: Contesto = { regole: lega.regole, orizzonte: "giornata", sdVoto };
+  return { stato: "pronta" as const, lega, mia, altre, ctx };
+}
+
+function SenzaLega({ stato }: { stato: "senza-lega" | "senza-squadra" }) {
+  return (
+    <section className="scheda">
+      <p className="vuoto">
+        {stato === "senza-lega" ? "Serve la tua lega: " : "Scegli la tua squadra: "}
+        <Link href="/lega">{stato === "senza-lega" ? "importala nella pagina La mia lega" : "vai a La mia lega"}</Link>
+        {stato === "senza-lega" && ", basta un clic da Leghe Fantacalcio."}
+      </p>
+    </section>
+  );
+}
+
+export function PaginaChiSchiero({ giocatori, sdVoto }: PropsPagina) {
+  const l = useMiaLega(giocatori, sdVoto);
+  if (l.stato === "attesa") return null;
+  if (l.stato !== "pronta") return <SenzaLega stato={l.stato} />;
+  const f = migliorFormazione(l.mia, l.ctx);
+  if (!f) return <p className="vuoto">La tua rosa non basta per una formazione.</p>;
+  return <ChiSchiero key={l.lega.mia} rosa={l.mia} formazione={f} ctx={l.ctx} />;
+}
+
+export function PaginaSvincolati({ giocatori, sdVoto }: PropsPagina) {
+  const l = useMiaLega(giocatori, sdVoto);
+  if (l.stato === "attesa") return null;
+  if (l.stato !== "pronta") return <SenzaLega stato={l.stato} />;
+  const liberi = svincolatiDellaLega(giocatori, [l.mia, ...l.altre.map((a) => a.rosa)]);
+  return <Svincolati mia={l.mia} liberi={liberi} ctx={l.ctx} />;
+}
 
 // ---------- Chi schiero? ----------
 

@@ -3,7 +3,7 @@ import { test } from "node:test";
 
 import { importaRose } from "./league.ts";
 import { CONTESTO_STANDARD, migliorFormazione, punteggioAtteso, SD_VOTO_DEFAULT, type Contesto } from "./lineup.ts";
-import { almenoK, fantavotoRegole, modificatoreAtteso, PESO_PROSSIME, REGOLE_STANDARD, sceltaCapitano, type Regole } from "./rules.ts";
+import { almenoK, fantavotoRegole, modificatoreAtteso, PESO_PROSSIME, probabilitaMigliorVoto, REGOLE_STANDARD, sceltaCapitano, type Regole } from "./rules.ts";
 import { liberi, suggerisciSvincolati } from "./svincolati.ts";
 import { probabilitaAccetta, suggerisciScambi, valutaScambio } from "./trades.ts";
 import type { Componenti, Giocatore, Ruolo } from "./types.ts";
@@ -202,4 +202,17 @@ test("negli scambi conta anche il calendario delle prossime giornate", () => {
   assert.ok(Math.abs(fantavotoRegole(facile, REGOLE_STANDARD, "stagione") - (7 + PESO_PROSSIME)) < 1e-9);
   // la prossima giornata resta quella prevista
   assert.equal(fantavotoRegole(facile, REGOLE_STANDARD, "giornata"), 7);
+});
+
+test("probabilità del voto più alto: somma 1 se giocano tutti; a pari media vince chi ha voti più variabili", () => {
+  const d = g("D", 6, { c: { voto: 6.2 } });
+  const a = g("A", 7, { c: { voto: 6.2 } });
+  const c = g("C", 6.5, { c: { voto: 6.0 } });
+  const sd = { P: 0.55, D: 0.4, C: 0.5, A: 0.8 };
+  const [pd, pa, pc] = probabilitaMigliorVoto([d, a, c], "giornata", sd);
+  assert.ok(Math.abs(pd + pa + pc - 1) < 0.01);
+  assert.ok(pa > pd && pd > pc);
+  // chi non gioca non prende il voto più alto
+  const fuori = g("A", 9, { p: 0, c: { voto: 8 } });
+  assert.ok(probabilitaMigliorVoto([d, fuori], "giornata", sd)[1] < 1e-9);
 });

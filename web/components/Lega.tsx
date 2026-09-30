@@ -4,17 +4,15 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Campo, CreditiFoto, Faccia } from "@/components/Campo";
-import { ChiSchiero, Svincolati } from "@/components/Consigli";
 import { legaEsempio, useLega, roseDellaLega, type LegaSalvata } from "@/components/legaStore";
 
 import { stato } from "@/components/Listone";
 import { conSegno, due, pct, voto } from "@/lib/format";
 import { codiceSegnalibro } from "@/lib/bookmarklet";
 import { importaRose } from "@/lib/league";
-import { liberi } from "@/lib/svincolati";
 import { migliorFormazione, type Contesto } from "@/lib/lineup";
 import { formattaNumero, leggiNumero } from "@/lib/numbers";
-import { componenti, fantavotoRegole, pGioca, REGOLE_STANDARD, TUTTI_I_MODULI, type Regole } from "@/lib/rules";
+import { fantavotoRegole, REGOLE_STANDARD, TUTTI_I_MODULI, type Regole } from "@/lib/rules";
 import { NOMI_RUOLO, RUOLI, type Giocatore, type Ruolo } from "@/lib/types";
 
 interface Props {
@@ -38,9 +36,7 @@ export function Lega({ giocatori, giornata, sdVoto }: Props) {
   }
 
   const ctx: Contesto = { regole: lega.regole, orizzonte: "giornata", sdVoto };
-  const { mia, altre } = roseDellaLega(lega, perId);
-  const formazioneMia = mia ? migliorFormazione(mia, ctx) : null;
-  const svincolati = mia ? liberi(giocatori, [mia, ...altre.map((a) => a.rosa)]) : [];
+  const { mia } = roseDellaLega(lega, perId);
   return (
     <>
       <section className="scheda">
@@ -81,10 +77,9 @@ export function Lega({ giocatori, giornata, sdVoto }: Props) {
       {mia ? (
         <>
           <Formazione rosa={mia} giornata={giornata} ctx={ctx} />
-          {formazioneMia && <ChiSchiero key={lega.mia} rosa={mia} formazione={formazioneMia} ctx={ctx} />}
-          <Svincolati mia={mia} liberi={svincolati} ctx={ctx} />
           <p className="rimando">
-            <Link href="/scambi">Cerca scambi per la tua squadra →</Link>
+            <Link href="/chi-schiero">Chi schiero? →</Link> · <Link href="/svincolati">Svincolati da prendere →</Link> ·{" "}
+            <Link href="/scambi">Scambi →</Link>
           </p>
         </>
       ) : (
@@ -572,7 +567,8 @@ function Formazione({ rosa, giornata, ctx }: { rosa: Giocatore[]; giornata: numb
           <span className="fascia-capitano vice">VC</span> vice: <strong>{f.capitano.vice.nome}</strong>
           <span className="nota-piccola">
             {" "}
-            · voto atteso {voto(componenti(f.capitano.capitano, ctx.orizzonte).voto)}, gioca {pct(pGioca(f.capitano.capitano, ctx.orizzonte))}
+            · probabilità di prendere il voto più alto della squadra: {pct(f.capitano.pMigliorCapitano)} e{" "}
+            {pct(f.capitano.pMigliorVice)}
           </span>
         </p>
       )}

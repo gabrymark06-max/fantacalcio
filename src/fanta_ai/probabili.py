@@ -21,7 +21,7 @@ import pandas as pd
 
 from fanta_ai.dataset import DATA_DIR
 from fanta_ai.names import find
-from fanta_ai.predict import WEB_DATA
+from fanta_ai.predict import WEB_DATA, in_serie_a
 
 
 def _collega(roster: list[dict], altri: list[dict], nome: str) -> int | None:
@@ -53,7 +53,7 @@ def main() -> None:
     if not sorgente.exists():
         print("Probabili formazioni non disponibili: il sito le ricava dal modello.")
         return
-    listone = pd.read_csv(DATA_DIR / "raw" / "listone.csv")
+    listone = in_serie_a(pd.read_csv(DATA_DIR / "raw" / "listone.csv"))
     partite = json.loads(sorgente.read_text(encoding="utf-8"))
     out = {f"{p['casa']}-{p['trasferta']}": collega_partita(p, listone) for p in partite}
     titolari = [t for p in out.values() for l in p["lati"].values() for t in l["titolari"]]
