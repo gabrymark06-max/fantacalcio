@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+
+# Dati scaricati: restano in locale, non vanno ripubblicati nel repository
+data/
