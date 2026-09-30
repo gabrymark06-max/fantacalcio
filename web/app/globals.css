@@ -843,3 +843,28 @@ thead th {
   border-radius: 0.4rem;
   padding: 0.5rem;
 }
+
+/* ---------- Ruoli di Leghe Fantacalcio e ruoli negli scambi ---------- */
+
+.ruoli-lega {
+  margin: 0.75rem 0;
+}
+
+.ruoli-lega summary {
+  cursor: pointer;
+}
+
+.elenco-ruoli {
+  columns: 16rem;
+  column-gap: 1.5rem;
+  padding-left: 1.1rem;
+  font-size: 0.875rem;
+}
+
+.elenco-ruoli .ruolo,
+.nome-ruolo .ruolo {
+  width: 1.3rem;
+  height: 1.3rem;
+  font-size: 0.75rem;
+  vertical-align: middle;
+}

@@ -22,8 +22,14 @@ interface LegaSalvata {
   squadre: Squadra[];
   mia: string | null;
   regole: Regole;
-  /** Ruoli cambiati dalla lega (id giocatore → ruolo), da Leghe Fantacalcio. */
+  /** Ruoli diversi dal listone letti da Leghe Fantacalcio (id giocatore → ruolo). */
   ruoli?: Record<number, Ruolo>;
+  /**
+   * Se usare quei ruoli. Spento di default: l'elenco di Leghe Fantacalcio non è sicuramente
+   * quello della lega (due leghe diverse hanno restituito lo stesso numero di voci), e con i
+   * ruoli sbagliati gli scambi proposti non rispettano la composizione delle rose.
+   */
+  usaRuoliLega?: boolean;
   /** Presente se la lega arriva da Leghe Fantacalcio. */
   origine?: {
     lega: string;
@@ -145,6 +151,7 @@ export function Lega({ giocatori, giornata, sdVoto }: Props) {
 
   const ctx: Contesto = { regole: lega.regole, orizzonte: "giornata", sdVoto };
   const mia = lega.squadre.find((s) => s.nome === lega.mia) ?? null;
+  const ruoliAttivi = lega.usaRuoliLega ? lega.ruoli : undefined;
   return (
     <>
       <section className="scheda">
@@ -165,7 +172,15 @@ export function Lega({ giocatori, giornata, sdVoto }: Props) {
         <p className="nota-piccola">
           {lega.squadre.length} squadre importate. Rose e regole restano salvate solo in questo browser.
         </p>
-        {lega.origine && <RiepilogoImport origine={lega.origine} ruoli={Object.keys(lega.ruoli ?? {}).length} />}
+        {lega.origine && <RiepilogoImport origine={lega.origine} />}
+        {Object.keys(lega.ruoli ?? {}).length > 0 && (
+          <RuoliLega
+            ruoli={lega.ruoli ?? {}}
+            perId={perId}
+            attivi={!!lega.usaRuoliLega}
+            onChange={(usaRuoliLega) => aggiorna({ ...lega, usaRuoliLega })}
+          />
+        )}
         {lega.origine && (
           <p className="nota-piccola">
             Dopo scambi o svincoli: apri la lega su Leghe Fantacalcio e clicca di nuovo il segnalibro <Segnalibro compatto />
@@ -176,11 +191,11 @@ export function Lega({ giocatori, giornata, sdVoto }: Props) {
 
       {mia ? (
         <>
-          <Formazione rosa={rosaLega(mia, perId, lega.ruoli)} giornata={giornata} ctx={ctx} />
+          <Formazione rosa={rosaLega(mia, perId, ruoliAttivi)} giornata={giornata} ctx={ctx} />
           <Scambi
-            key={JSON.stringify(lega.regole) + mia.nome}
-            mia={rosaLega(mia, perId, lega.ruoli)}
-            altre={lega.squadre.filter((s) => s.nome !== mia.nome).map((s) => ({ nome: s.nome, rosa: rosaLega(s, perId, lega.ruoli) }))}
+            key={JSON.stringify(lega.regole) + mia.nome + String(!!lega.usaRuoliLega)}
+            mia={rosaLega(mia, perId, ruoliAttivi)}
+            altre={lega.squadre.filter((s) => s.nome !== mia.nome).map((s) => ({ nome: s.nome, rosa: rosaLega(s, perId, ruoliAttivi) }))}
             ctx={ctx}
             giornateRimanenti={Math.max(1, 38 - giornata + 1)}
           />
@@ -235,7 +250,49 @@ function CollegaLeghe() {
   );
 }
 
-function RiepilogoImport({ origine, ruoli }: { origine: NonNullable<LegaSalvata["origine"]>; ruoli: number }) {
+function RuoliLega({
+  ruoli,
+  perId,
+  attivi,
+  onChange,
+}: {
+  ruoli: Record<number, Ruolo>;
+  perId: Map<number, Giocatore>;
+  attivi: boolean;
+  onChange: (attivi: boolean) => void;
+}) {
+  const cambi = Object.entries(ruoli)
+    .map(([id, ruolo]) => ({ g: perId.get(Number(id)), ruolo }))
+    .filter((x): x is { g: Giocatore; ruolo: Ruolo } => x.g !== undefined && x.g.ruolo !== x.ruolo)
+    .sort((a, b) => a.g.nome.localeCompare(b.g.nome));
+  if (cambi.length === 0) return null;
+  return (
+    <details className="ruoli-lega">
+      <summary>
+        Ruoli: {attivi ? <strong>quelli di Leghe Fantacalcio</strong> : <strong>quelli del listone</strong>} ·{" "}
+        {cambi.length} giocatori hanno un ruolo diverso su Leghe Fantacalcio
+      </summary>
+      <p className="nota-piccola">
+        Attiva questi ruoli solo se nella tua lega i giocatori sono davvero schierabili così: formazione e scambi
+        useranno questi ruoli al posto di quelli del listone.
+      </p>
+      <label className="spunta">
+        <input type="checkbox" checked={attivi} onChange={(e) => onChange(e.target.checked)} /> Usa i ruoli di Leghe
+        Fantacalcio
+      </label>
+      <ul className="elenco-ruoli">
+        {cambi.map(({ g, ruolo }) => (
+          <li key={g.id}>
+            {g.nome} ({g.squadra}): <span className={`ruolo ruolo-${g.ruolo}`}>{g.ruolo}</span> →{" "}
+            <span className={`ruolo ruolo-${ruolo}`}>{ruolo}</span>
+          </li>
+        ))}
+      </ul>
+    </details>
+  );
+}
+
+function RiepilogoImport({ origine }: { origine: NonNullable<LegaSalvata["origine"]> }) {
   const [copiato, setCopiato] = useState(false);
   const daControllare = origine.note.filter((n) => n.tipo === "controlla");
   const testo = JSON.stringify(origine.impostazioni, null, 1);
@@ -246,8 +303,6 @@ function RiepilogoImport({ origine, ruoli }: { origine: NonNullable<LegaSalvata[
         {new Date(origine.importata).toLocaleDateString("it-IT", { day: "numeric", month: "long" })}.
         {origine.fuoriListone === 1 && " 1 giocatore non è più nel listone di Serie A e non viene contato."}
         {origine.fuoriListone > 1 && ` ${origine.fuoriListone} giocatori non sono più nel listone di Serie A e non vengono contati.`}
-        {ruoli === 1 && " 1 giocatore ha il ruolo cambiato dalla lega."}
-        {ruoli > 1 && ` ${ruoli} giocatori hanno il ruolo cambiato dalla lega.`}
       </p>
       <ul className="note-import">
         {origine.note.map((n, i) => (
@@ -632,14 +687,29 @@ function GiocatoreRiga({ g, ctx }: { g: Giocatore; ctx: Contesto }) {
 
 // ---------- Scambi ----------
 
+function NomiConRuolo({ giocatori }: { giocatori: Giocatore[] }) {
+  return (
+    <>
+      {giocatori.map((g, i) => (
+        <span key={g.id} className="nome-ruolo">
+          {i > 0 && " + "}
+          <span className={`ruolo ruolo-${g.ruolo}`} title={NOMI_RUOLO[g.ruolo]}>
+            {g.ruolo}
+          </span>{" "}
+          <strong>{g.nome}</strong>
+        </span>
+      ))}
+    </>
+  );
+}
+
 function PropostaScambio({ s, giornateRimanenti }: { s: Scambio; giornateRimanenti: number }) {
   const etichetta = etichettaAccetta(s.pAccetta);
   const diffMercato = Math.round((s.equita - 1) * 100);
   return (
     <li>
       <span>
-        Cedi <strong>{s.cedo.map((g) => g.nome).join(" + ")}</strong> a {s.controparte}, ricevi{" "}
-        <strong>{s.ricevo.map((g) => g.nome).join(" + ")}</strong>
+        Cedi <NomiConRuolo giocatori={s.cedo} /> a {s.controparte}, ricevi <NomiConRuolo giocatori={s.ricevo} />
       </span>
       <span className="delta">
         tu {conSegno(s.deltaMio)} a giornata (circa {conSegno(s.deltaMio * giornateRimanenti).replace(/,\d+$/, "")} punti a
