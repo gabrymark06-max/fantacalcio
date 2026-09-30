@@ -116,29 +116,25 @@ export function Probabili({ partite, giocatori, probabili, loghi: loghiSquadre }
 
       {casa && trasferta ? (
         <div className="tavolo-partita">
-          <ColonnaSquadra f={casa} lato="casa">
-            <RiquadroPronostico p={p} pr={pronostico(p)} />
-            <RiquadroGiocatori classe="riquadro-riga5" titolo="Possibili marcatori" liste={[["Segna almeno un gol", pGol, 6]]} casa={casa} trasferta={trasferta} />
-          </ColonnaSquadra>
+          <ColonnaSquadra f={casa} lato="casa" />
           <div className="colonna-centrale">
             <Confronto casa={casa} trasferta={trasferta} />
-            <RiquadroForma p={p} loghi={loghi} />
           </div>
-          <ColonnaSquadra f={trasferta} lato="trasferta">
-            <RiquadroDaSapere schede={daSapere(p, pronostico(p), casa, trasferta)} loghi={loghi} />
-            <RiquadroGiocatori
-              classe="riquadro-riga5"
-              titolo="Assist e cartellini"
-              liste={[
-                ["Possibili assist", pAssist, 3],
-                ["Rischio cartellino", pCartellino, 3],
-              ]}
-              casa={casa}
-              trasferta={trasferta}
-            />
-          </ColonnaSquadra>
+          <ColonnaSquadra f={trasferta} lato="trasferta" />
         </div>
-      ) : (
+      ) : null}
+      {casa && trasferta && (
+        // sotto: due righe di tre riquadri, ognuna con i riquadri alla stessa altezza
+        <div className="analisi-partita">
+          <RiquadroPronostico p={p} pr={pronostico(p)} />
+          <RiquadroForma p={p} loghi={loghi} />
+          <RiquadroDaSapere schede={daSapere(p, pronostico(p), casa, trasferta)} loghi={loghi} />
+          <RiquadroGiocatori titolo="Possibili marcatori" liste={[["Segna almeno un gol", pGol, 5]]} casa={casa} trasferta={trasferta} />
+          <RiquadroGiocatori titolo="Possibili assist" liste={[["Fa almeno un assist", pAssist, 5]]} casa={casa} trasferta={trasferta} />
+          <RiquadroGiocatori titolo="Rischio cartellino" liste={[["Ammonito o espulso", pCartellino, 5]]} casa={casa} trasferta={trasferta} />
+        </div>
+      )}
+      {!(casa && trasferta) && (
         <p className="vuoto">Rose incomplete nel listone: non si può mostrare la formazione.</p>
       )}
       <p className="nota-piccola fonte-probabili">
@@ -164,7 +160,7 @@ function Pedina({ g }: { g: Giocatore }) {
   );
 }
 
-function ColonnaSquadra({ f, lato, children }: { f: FormazioneSquadra; lato: "casa" | "trasferta"; children?: React.ReactNode }) {
+function ColonnaSquadra({ f, lato }: { f: FormazioneSquadra; lato: "casa" | "trasferta" }) {
   return (
     <div className={`colonna-partita colonna-${lato}`}>
       <div className="mini-campo campo-partita" role="group" aria-label={`${f.squadra}, ${f.modulo}`}>
@@ -222,7 +218,6 @@ function ColonnaSquadra({ f, lato, children }: { f: FormazioneSquadra; lato: "ca
           </ul>
         )}
       </section>
-      {children}
     </div>
   );
 }
@@ -296,7 +291,7 @@ function RiquadroPronostico({ p, pr }: { p: Partita; pr: Pronostico }) {
     [`Porta inviolata ${p.trasferta}`, pr.portaInviolataTrasferta],
   ];
   return (
-    <section className="riquadro riquadro-riga4" aria-label="Pronostico">
+    <section className="riquadro" aria-label="Pronostico">
       <h3>Pronostico</h3>
       <div className="barra-esiti" role="img" aria-label={`1 ${pct(p.p1)}, X ${pct(p.px)}, 2 ${pct(p.p2)}`}>
         {([["1", p.p1], ["X", p.px], ["2", p.p2]] as const).map(([e, q]) => (
@@ -408,7 +403,7 @@ const TIPI: Record<DaSapere["tipo"], string> = {
 
 function RiquadroDaSapere({ schede, loghi }: { schede: DaSapere[]; loghi: Record<string, string> }) {
   return (
-    <section className="riquadro riquadro-riga4" aria-label="Da sapere">
+    <section className="riquadro" aria-label="Da sapere">
       <h3>Da sapere</h3>
       <ul className="schede-sapere">
         {schede.map((x) => (
@@ -466,13 +461,11 @@ function ListaEvidenze({ titolo, voci }: { titolo: string; voci: Evidenza[] }) {
 }
 
 function RiquadroGiocatori({
-  classe,
   titolo,
   liste,
   casa,
   trasferta,
 }: {
-  classe: string;
   titolo: string;
   liste: [string, (g: Giocatore) => number, number][];
   casa: FormazioneSquadra;
@@ -480,7 +473,7 @@ function RiquadroGiocatori({
 }) {
   const titolari = [...casa.titolari, ...trasferta.titolari];
   return (
-    <section className={`riquadro ${classe}`} aria-label={titolo}>
+    <section className="riquadro" aria-label={titolo}>
       <h3>{titolo}</h3>
       {liste.map(([etichetta, f, quanti]) => (
         <ListaEvidenze key={etichetta} titolo={etichetta} voci={migliori(titolari, f, quanti)} />

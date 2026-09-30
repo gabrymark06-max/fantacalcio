@@ -190,5 +190,8 @@ export function daSapere(p: Partita, pr: Pronostico, casa: FormazioneSquadra | n
     const scheda = schedaForma(squadra, forma);
     if (scheda) out.push(scheda);
   }
-  return out;
+  return out.slice(0, MAX_SCHEDE);
 }
+
+/** Le schede più importanti bastano: di più allungherebbero la riga dei riquadri accanto. */
+const MAX_SCHEDE = 6;

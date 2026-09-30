@@ -2584,3 +2584,35 @@ button.carta-scambio[aria-pressed="true"] {
 .sapere-testo strong::first-letter {
   text-transform: uppercase;
 }
+
+/* ---------- Allineamento: parte alta e griglia di analisi ---------- */
+
+@media (min-width: 64.01rem) {
+  /* campi, ballottaggi, indisponibili ai lati; il confronto al centro. Gli indisponibili si
+     allungano fino in fondo, così le tre colonne finiscono alla stessa altezza */
+  .tavolo-partita {
+    grid-template-rows: auto auto 1fr;
+  }
+  .colonna-centrale {
+    grid-row: 1 / span 3;
+    align-self: stretch;
+  }
+  .colonna-centrale > .confronto {
+    height: 100%;
+  }
+}
+
+/* sotto: righe di tre riquadri alla stessa altezza, sulle stesse colonne della parte alta */
+.analisi-partita {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: stretch;
+  margin-top: 1.25rem;
+}
+
+@media (max-width: 64rem) {
+  .analisi-partita {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
