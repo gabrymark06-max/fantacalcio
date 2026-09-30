@@ -16,8 +16,8 @@ test("pronostico: probabilità coerenti con i gol attesi", () => {
   const pr = pronostico(partita(1.5, 0.9, 0.5, 0.25, 0.25));
   assert.ok(Math.abs(pr.golAttesi - 2.4) < 1e-9);
   // porta inviolata = P(0 gol subiti) = e^-λ dell'avversario
-  assert.ok(Math.abs(pr.portaInviolataCasa - Math.exp(-0.9)) < 1e-9);
-  assert.ok(Math.abs(pr.portaInviolataTrasferta - Math.exp(-1.5)) < 1e-9);
+  assert.ok(Math.abs(pr.portaInviolataCasa - Math.exp(-0.9)) < 1e-6);
+  assert.ok(Math.abs(pr.portaInviolataTrasferta - Math.exp(-1.5)) < 1e-6);
   assert.ok(pr.over15 > pr.over25 && pr.over25 > pr.over35);
   // con 2,4 gol attesi l'over 2,5 è poco sotto la metà
   assert.ok(pr.over25 > 0.4 && pr.over25 < 0.5);
@@ -44,4 +44,24 @@ test("da sapere: favorita, gol, risultato, forma", () => {
 test("probabilità di gol di un giocatore: gioca × almeno un gol", () => {
   const g = { p_gioca: 0.8, giornata: { gol: 0.5, rigori_segnati: 0.1 } } as unknown as Giocatore;
   assert.ok(Math.abs(pGol(g) - 0.8 * (1 - Math.exp(-0.6))) < 1e-9);
+});
+
+test("mercati: probabilità complementari e coerenti", async () => {
+  const { mercati, matriceRisultati, pronosticoStatistico, quotaEqua } = await import("./pronostico.ts");
+  const p = partita(1.8, 0.9, 0.55, 0.25, 0.2);
+  const m = Object.fromEntries(mercati(p).map((x) => [x.chiave, x.p]));
+  assert.ok(Math.abs(m["1"] + m["X"] + m["2"] - 1) < 1e-6);
+  assert.ok(Math.abs(m["1X"] - m["1"] - m["X"]) < 1e-9);
+  assert.ok(Math.abs(m.over25 + m.under25 - 1) < 1e-9);
+  assert.ok(m.over05 > m.over15 && m.over15 > m.over25);
+  assert.ok(Math.abs(m.segna_trasferta - (1 - Math.exp(-0.9))) < 1e-6);
+  const griglia = matriceRisultati(p);
+  assert.equal(griglia.length, 6);
+  assert.ok(Math.abs(griglia[1][0] - 1.8 * Math.exp(-1.8) * Math.exp(-0.9)) < 1e-6);
+  assert.equal(quotaEqua(0.5), 2);
+  const scelte = pronosticoStatistico(mercati(p), p);
+  assert.deepEqual(scelte.map((s) => s.titolo), ["Esito finale", "Doppia chance", "Under / over 2,5", "Gol / no gol", "Multigol", "Risultato esatto"]);
+  assert.equal(scelte[0].mercato.chiave, "1");
+  assert.equal(scelte[1].mercato.chiave, "1X");
+  assert.equal(scelte[5].mercato.nome, "1-0");
 });

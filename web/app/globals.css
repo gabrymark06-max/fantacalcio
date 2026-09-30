@@ -2616,3 +2616,566 @@ button.carta-scambio[aria-pressed="true"] {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* ---------- Pagina Pronostici ---------- */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.proiezione,
+.pronostici {
+  /* più larghe del testo, come il banco degli scambi */
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100vw - 3rem, 92rem);
+}
+
+.tabella-scorrevole {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.tabella-proiezione {
+  width: 100%;
+  min-width: 44rem;
+  border-collapse: separate;
+  border-spacing: 0 2px;
+  font-size: 0.9rem;
+}
+
+.tabella-proiezione th,
+.tabella-proiezione td {
+  padding: 0.4rem 0.5rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.tabella-proiezione thead th {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--inchiostro-2);
+  white-space: normal;
+}
+
+.tabella-proiezione tbody tr {
+  background: var(--carta);
+}
+
+.tabella-proiezione tbody th {
+  text-align: left;
+}
+
+.squadra-cella {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+}
+
+.squadra-cella .nota-piccola {
+  font-weight: 400;
+}
+
+.tabella-proiezione .pos {
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  color: var(--inchiostro-2);
+}
+
+.barra-punti {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 9rem;
+  height: 1.5rem;
+  border-radius: 0.3rem;
+  background: var(--riga);
+  overflow: hidden;
+}
+
+.barra-punti span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--ruolo-d);
+}
+
+.barra-punti b {
+  position: relative;
+  margin-left: auto;
+  padding-right: 0.4rem;
+  font-family: var(--font-titolo);
+}
+
+.calore {
+  --alfa: 0;
+  font-family: var(--font-dati);
+  background: color-mix(in srgb, var(--evidenziatore) calc(var(--alfa) * 100%), transparent);
+}
+
+.calore.retro {
+  background: color-mix(in srgb, var(--ruolo-a) calc(var(--alfa) * 100%), transparent);
+}
+
+.striscia-pronostici {
+  list-style: none;
+  margin: 0 0 1.25rem;
+  padding: 0.25rem 0.25rem 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: 0.5rem;
+}
+
+.striscia-pronostici button {
+  width: 100%;
+  display: grid;
+  gap: 0.4rem;
+  min-height: 0;
+  padding: 0.6rem 0.7rem;
+  color: var(--inchiostro);
+  background: var(--carta-2);
+  border: 1px solid var(--riga);
+  border-radius: 0.7rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.striscia-pronostici button[aria-pressed="true"] {
+  border-color: var(--evidenziatore);
+  box-shadow: 0 0 0 2px var(--evidenziatore);
+}
+
+.striscia-squadre {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.mini-esiti {
+  display: flex;
+  gap: 2px;
+  height: 0.35rem;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.scheda-pronostico {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.testata-pronostico {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: 0.8rem;
+  background: var(--carta-2);
+  border: 1px solid var(--riga);
+}
+
+.gol-attesi-grandi {
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  font-size: 2rem;
+  color: var(--inchiostro);
+}
+
+.gol-attesi-grandi small {
+  font-family: var(--font-testo);
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: var(--inchiostro-2);
+}
+
+.griglia-pronostico {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+.griglia-pronostico .largo-2 {
+  grid-column: span 2;
+}
+
+.scelte {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.scelte li {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.6rem;
+  background: var(--carta);
+  border-left: 4px solid var(--evidenziatore);
+}
+
+.scelta-titolo {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--inchiostro-2);
+}
+
+.scelte strong {
+  font-size: 1.05rem;
+}
+
+.scelta-numeri {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.8rem;
+  font-size: 0.8rem;
+  color: var(--inchiostro-2);
+}
+
+.scelta-p {
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  font-size: 1.3rem;
+  color: var(--inchiostro);
+}
+
+.esiti-grandi {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.esito-grande {
+  display: grid;
+  justify-items: center;
+  gap: 0.1rem;
+  padding: 0.6rem 0.3rem;
+  border-radius: 0.6rem;
+}
+
+.esito-grande .nota-piccola {
+  color: inherit;
+  opacity: 0.85;
+  font-size: 0.72rem;
+}
+
+.esito-segno {
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+.esito-p {
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  font-size: 1.9rem;
+  line-height: 1;
+}
+
+.griglia-risultati {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 3px;
+  font-family: var(--font-dati);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.griglia-risultati th {
+  font-weight: 700;
+  color: var(--inchiostro-2);
+}
+
+.cella-risultato {
+  --alfa: 0;
+  height: 2rem;
+  border-radius: 0.3rem;
+}
+
+.cella-risultato.vittoria-casa {
+  background: color-mix(in srgb, var(--ruolo-d) calc(var(--alfa) * 100%), var(--carta));
+}
+
+.cella-risultato.pari {
+  background: color-mix(in srgb, var(--inchiostro-2) calc(var(--alfa) * 100%), var(--carta));
+}
+
+.cella-risultato.vittoria-trasferta {
+  background: color-mix(in srgb, var(--ruolo-c) calc(var(--alfa) * 100%), var(--carta));
+}
+
+.tabella-quote {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.tabella-quote th,
+.tabella-quote td {
+  padding: 0.45rem 0.4rem;
+  border-bottom: 1px solid var(--riga);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.tabella-quote th:first-child {
+  text-align: left;
+}
+
+.tabella-quote thead th {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--inchiostro-2);
+}
+
+.tabella-quote .numero {
+  font-family: var(--font-dati);
+}
+
+.gruppi-mercati {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: 0.5rem 1.5rem;
+}
+
+.gruppo-mercato ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.gruppo-mercato li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 3.5rem 2.6rem 2.6rem auto;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.mercato-nome {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gruppo-mercato .barra-p {
+  max-width: none;
+}
+
+.mercato-p {
+  font-family: var(--font-dati);
+  font-weight: 700;
+  text-align: right;
+}
+
+.mercato-quota,
+.mercato-libro {
+  font-family: var(--font-dati);
+  text-align: right;
+  color: var(--inchiostro-2);
+}
+
+.mercato-libro {
+  color: var(--inchiostro);
+}
+
+.confronto-statistiche {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.35rem;
+  font-size: 0.9rem;
+}
+
+.confronto-statistiche thead th {
+  font-weight: 700;
+}
+
+.confronto-statistiche thead th:first-child {
+  text-align: right;
+}
+
+.confronto-statistiche thead th:last-child {
+  text-align: left;
+}
+
+.confronto-statistiche tbody th {
+  width: 11rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--inchiostro-2);
+  text-align: center;
+}
+
+.lato-sinistro,
+.lato-destro {
+  width: 40%;
+}
+
+.lato-sinistro {
+  text-align: right;
+}
+
+.lato-sinistro,
+.lato-destro {
+  position: relative;
+}
+
+.barra-confronto {
+  display: inline-block;
+  height: 0.7rem;
+  max-width: calc(100% - 3.5rem);
+  vertical-align: middle;
+  border-radius: 999px;
+  background: var(--riga);
+}
+
+.lato-sinistro .barra-confronto {
+  margin-left: 0.5rem;
+}
+
+.lato-destro .barra-confronto {
+  margin-right: 0.5rem;
+}
+
+.meglio .barra-confronto {
+  background: var(--ruolo-d);
+}
+
+.valore {
+  display: inline-block;
+  min-width: 2.8rem;
+  font-family: var(--font-dati);
+  font-weight: 700;
+}
+
+.lato-sinistro .valore {
+  text-align: right;
+}
+
+.sotto-titolo {
+  margin-top: 1rem !important;
+}
+
+.precedenti {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+}
+
+.precedenti li {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.precedenti li > span:nth-child(2) {
+  text-align: right;
+}
+
+.precedenti strong {
+  font-family: var(--font-titolo);
+}
+
+.precedenti .vince {
+  font-weight: 700;
+}
+
+.avvertenza-gioco {
+  max-width: 44rem;
+  margin: 2rem auto 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--riga);
+  border-radius: 0.6rem;
+  font-size: 0.8rem;
+  color: var(--inchiostro-2);
+  text-align: center;
+}
+
+.rimando-pronostico {
+  margin: 1rem 0 0;
+  text-align: center;
+  font-weight: 700;
+}
+
+@media (max-width: 64rem) {
+  .proiezione,
+  .pronostici {
+    left: 0;
+    transform: none;
+    width: auto;
+  }
+  .griglia-pronostico {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .griglia-pronostico .largo-2 {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 40rem) {
+  .testata-pronostico {
+    padding: 0.75rem;
+    gap: 0.4rem;
+  }
+  .testata-pronostico .distintivo.grande,
+  .testata-pronostico .logo-squadra.grande {
+    display: none;
+  }
+  .gol-attesi-grandi {
+    font-size: 1.3rem;
+  }
+  .confronto-statistiche tbody th {
+    width: 6.5rem;
+    font-size: 0.72rem;
+  }
+  .barra-confronto {
+    display: none;
+  }
+  .gruppo-mercato li {
+    grid-template-columns: minmax(0, 1fr) 2.6rem 2.6rem auto;
+  }
+  .gruppo-mercato .barra-p {
+    display: none;
+  }
+}
+
+.griglia-risultati td,
+.griglia-risultati th {
+  text-align: center;
+}
+
+.scelte {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 40rem) {
+  .scelte {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

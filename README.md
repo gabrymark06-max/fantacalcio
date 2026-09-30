@@ -79,6 +79,23 @@ a partire dalla giornata 6 del 2026/27).
   contro gli avversari veri pesano il 40% del valore stagionale (`PESO_PROSSIME` in
   `web/lib/rules.ts`); le partite si leggono da `/serie-a/calendario/N`.
 
+## Pronostici
+
+Pagina `/pronostici` (dati da `fanta_ai.pronostici`, passo della pipeline):
+
+- **Come finisce il campionato**: 20.000 simulazioni del resto della stagione (gol di
+  Poisson dai rating di attacco e difesa delle ultime 10 partite, calendario da
+  fantacalcio.it): punti attesi, scudetto, Champions, Europa, Conference, retrocessione.
+- **Ogni partita**: probabilità di 25 mercati (1X2, doppia chance, under/over 0,5-4,5,
+  gol/no gol, multigol, squadra segna) con la quota equa, griglia dei risultati esatti,
+  pronostico statistico, statistiche della stagione a confronto (football-data.co.uk: tiri,
+  tiri in porta, corner, falli, cartellini...), forma, precedenti dal 2021, giocatori.
+- **Quote**: bet365 e bwin (licenza ADM) più media e massima di mercato da football-data
+  (`fixtures.csv`, di solito 2-3 giorni prima delle partite). Con una chiave gratuita di
+  The Odds API in `ODDS_API_KEY` si aggiungono Codere e Unibet Italia.
+- Solo informazione (linee guida AGCOM sul Decreto Dignità, delibera 132/19/CONS): niente
+  link, bonus o promozioni dei bookmaker, avvertenza sul gioco per i minori.
+
 ## Foto dei giocatori
 
 `uv run python -m fanta_ai.scraping.anagrafica` e poi `uv run python -m fanta_ai.scraping.foto`

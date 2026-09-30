@@ -6,6 +6,8 @@ import giocatoriJson from "../data/giocatori.json";
 import giornataJson from "../data/giornata.json";
 import loghiJson from "../data/loghi.json";
 import probabiliJson from "../data/probabili.json";
+import pronosticiJson from "../data/pronostici.json";
+import type { DatiPronostici } from "./datiPronostici.ts";
 import type { Foto } from "./foto.ts";
 import type { PartitaProbabile } from "./probabili.ts";
 import type { Accuratezza, Giocatore, Giornata } from "./types.ts";
@@ -19,3 +21,5 @@ export const foto = { ...(fotoJson as Record<string, Foto>), ...(fotoPersonaliJs
 export const loghi = loghiJson as Record<string, string>;
 /** Probabili formazioni di SOS Fanta: solo sul proprio PC, altrove è vuoto (vedi lib/probabili.ts). */
 export const probabili = probabiliJson as Record<string, PartitaProbabile>;
+/** Classifica, proiezione, statistiche, forma, precedenti e quote per la pagina Pronostici. */
+export const pronostici = pronosticiJson as unknown as DatiPronostici;

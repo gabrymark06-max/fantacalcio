@@ -15,7 +15,9 @@ const MAX_GOL = 10;
 function poisson(lambda: number): number[] {
   const out = [Math.exp(-lambda)];
   for (let k = 1; k <= MAX_GOL; k++) out.push((out[k - 1] * lambda) / k);
-  return out;
+  // oltre MAX_GOL resta una probabilità trascurabile: si normalizza perché i mercati sommino a 1
+  const totale = out.reduce((x, y) => x + y, 0);
+  return out.map((x) => x / totale);
 }
 
 export interface Risultato {
@@ -195,3 +197,88 @@ export function daSapere(p: Partita, pr: Pronostico, casa: FormazioneSquadra | n
 
 /** Le schede più importanti bastano: di più allungherebbero la riga dei riquadri accanto. */
 const MAX_SCHEDE = 6;
+
+// ---------- Mercati, quote eque e pronostico statistico (pagina Pronostici) ----------
+
+/** Probabilità di ogni risultato esatto fino a 5 gol per squadra: [gol casa][gol trasferta]. */
+export function matriceRisultati(p: Partita, max = 5): number[][] {
+  const pc = poisson(p.xg_casa);
+  const pt = poisson(p.xg_trasferta);
+  return Array.from({ length: max + 1 }, (_, i) => Array.from({ length: max + 1 }, (_, j) => pc[i] * pt[j]));
+}
+
+export interface Mercato {
+  /** Chiave usata anche per le quote dei bookmaker (1, X, 2, over25, under25). */
+  chiave: string;
+  gruppo: string;
+  nome: string;
+  p: number;
+}
+
+/** Tutti i mercati principali con la loro probabilità, dalla stessa matrice dei risultati. */
+export function mercati(p: Partita): Mercato[] {
+  const pc = poisson(p.xg_casa);
+  const pt = poisson(p.xg_trasferta);
+  const somma = (f: (i: number, j: number) => boolean) => {
+    let s = 0;
+    pc.forEach((a, i) => pt.forEach((b, j) => { if (f(i, j)) s += a * b; }));
+    return s;
+  };
+  const uno = somma((i, j) => i > j);
+  const ics = somma((i, j) => i === j);
+  const due = somma((i, j) => i < j);
+  const out: Mercato[] = [
+    { chiave: "1", gruppo: "Esito finale", nome: `1 · vince ${p.casa}`, p: uno },
+    { chiave: "X", gruppo: "Esito finale", nome: "X · pareggio", p: ics },
+    { chiave: "2", gruppo: "Esito finale", nome: `2 · vince ${p.trasferta}`, p: due },
+    { chiave: "1X", gruppo: "Doppia chance", nome: `1X · ${p.casa} non perde`, p: uno + ics },
+    { chiave: "X2", gruppo: "Doppia chance", nome: `X2 · ${p.trasferta} non perde`, p: ics + due },
+    { chiave: "12", gruppo: "Doppia chance", nome: "12 · non finisce pari", p: uno + due },
+  ];
+  for (const soglia of [0.5, 1.5, 2.5, 3.5, 4.5]) {
+    const over = somma((i, j) => i + j > soglia);
+    const s = String(soglia).replace(".", ",");
+    const k = String(soglia).replace(".", "");
+    out.push({ chiave: `over${k}`, gruppo: "Under / Over", nome: `Over ${s}`, p: over });
+    out.push({ chiave: `under${k}`, gruppo: "Under / Over", nome: `Under ${s}`, p: 1 - over });
+  }
+  const gg = somma((i, j) => i > 0 && j > 0);
+  out.push({ chiave: "gg", gruppo: "Gol / No gol", nome: "Gol · segnano entrambe", p: gg });
+  out.push({ chiave: "ng", gruppo: "Gol / No gol", nome: "No gol · almeno una non segna", p: 1 - gg });
+  for (const [a, b] of [[1, 2], [1, 3], [2, 3], [2, 4], [3, 5]]) {
+    out.push({ chiave: `mg${a}${b}`, gruppo: "Multigol", nome: `Multigol ${a}-${b}`, p: somma((i, j) => i + j >= a && i + j <= b) });
+  }
+  out.push({ chiave: "segna_casa", gruppo: "Squadra segna", nome: `Segna ${p.casa}`, p: 1 - pc[0] });
+  out.push({ chiave: "segna_trasferta", gruppo: "Squadra segna", nome: `Segna ${p.trasferta}`, p: 1 - pt[0] });
+  return out;
+}
+
+/** Quota equa: quella senza margine del bookmaker, 1 / probabilità. */
+export const quotaEqua = (p: number) => (p > 0 ? 1 / p : Infinity);
+
+export interface Scelta {
+  titolo: string;
+  mercato: Mercato;
+}
+
+/**
+ * Pronostico statistico: per ogni tipo di mercato l'esito più probabile (esito finale,
+ * doppia chance, under/over 2,5, gol/no gol, multigol) e il risultato esatto più probabile.
+ * Sono le previsioni del modello, non consigli di gioco.
+ */
+export function pronosticoStatistico(m: Mercato[], p?: Partita): Scelta[] {
+  const top = (xs: Mercato[]) => xs.reduce((a, b) => (b.p > a.p ? b : a));
+  const di = (g: string) => m.filter((x) => x.gruppo === g);
+  const scelte: Scelta[] = [
+    { titolo: "Esito finale", mercato: top(di("Esito finale")) },
+    { titolo: "Doppia chance", mercato: top(di("Doppia chance")) },
+    { titolo: "Under / over 2,5", mercato: top(m.filter((x) => x.chiave === "over25" || x.chiave === "under25")) },
+    { titolo: "Gol / no gol", mercato: top(di("Gol / No gol")) },
+    { titolo: "Multigol", mercato: top(di("Multigol")) },
+  ];
+  if (p) {
+    const [r] = pronostico(p).risultati;
+    scelte.push({ titolo: "Risultato esatto", mercato: { chiave: `esatto${r.casa}${r.trasferta}`, gruppo: "Risultato esatto", nome: `${r.casa}-${r.trasferta}`, p: r.p } });
+  }
+  return scelte;
+}

@@ -68,12 +68,15 @@ def main() -> None:
     out.write_text(json.dumps(matches, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"Giornata {matches[0]['giornata']}: {len(matches)} partite salvate in {out}")
 
-    # le giornate successive servono agli scambi (calendario più o meno difficile): un di più,
-    # se non si leggono resta valida la giornata corrente
+    # le giornate successive servono agli scambi (calendario più o meno difficile, le prime 5)
+    # e alla proiezione del campionato (tutte): un di più, se non si leggono resta valida la
+    # giornata corrente
     try:
-        prossime = prossime_giornate(matches[0]["giornata"])
+        stagione = prossime_giornate(matches[0]["giornata"], 38)
+        prossime = [m for m in stagione if m["giornata"] < matches[0]["giornata"] + GIORNATE_CALENDARIO]
         (DATA_DIR / "raw" / "calendario_prossime.json").write_text(json.dumps(prossime, ensure_ascii=False, indent=1), encoding="utf-8")
-        print(f"Calendario: {len({m['giornata'] for m in prossime})} giornate, {len(prossime)} partite")
+        (DATA_DIR / "raw" / "calendario_stagione.json").write_text(json.dumps(stagione, ensure_ascii=False, indent=1), encoding="utf-8")
+        print(f"Calendario: {len({m['giornata'] for m in stagione})} giornate da giocare, {len(stagione)} partite")
     except Exception as exc:
         print(f"Prossime giornate non lette ({exc})")
 
@@ -83,7 +86,8 @@ GIORNATE_CALENDARIO = 5
 
 
 def prossime_giornate(da: int, quante: int = GIORNATE_CALENDARIO) -> list[dict]:
-    """Partite delle giornate da `da` a `da + quante - 1` (pagina /serie-a/calendario/N)."""
+    """Partite delle giornate da `da` a `da + quante - 1`, al massimo fino alla 38ª
+    (pagina /serie-a/calendario/N)."""
     partite = []
     for g in range(da, min(38, da + quante - 1) + 1):
         html = fetch_html(f"{URL}/{g}", DATA_DIR / "cache" / "calendario", refresh=True)
