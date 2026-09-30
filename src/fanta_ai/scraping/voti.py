@@ -148,9 +148,11 @@ def scrape_season(season: str, giornate: list[int] | None = None, *, refresh: bo
             )
         with_vote = sum(r["v_fc"] is not None for r in records)
         print(f"{season} giornata {giornata}: {len(records)} giocatori, {with_vote} con voto")
-        if with_vote == 0:
-            # giornata non ancora giocata: non tenerla in cache, andrà riscaricata
+        teams_with_votes = len({r["squadra"] for r in records if r["v_fc"] is not None})
+        if teams_with_votes < 20:
+            # giornata non giocata o in corso: non tenerla in cache, andrà riscaricata
             cache_path(url, cache_dir).unlink(missing_ok=True)
+        if with_vote == 0:
             if giornate is None:
                 print("Nessun voto: giornata non ancora giocata, mi fermo.")
                 break

@@ -1,0 +1,50 @@
+[
+ {
+  "stagione": "2023-24",
+  "righe_test": 16597,
+  "fv_mae_modello": 0.9052385172803197,
+  "fv_mae_baseline": 1.0001383459038473,
+  "fv_spearman_modello": 0.22460662494060277,
+  "fv_spearman_baseline": 0.13145228958785846,
+  "gioca_brier_modello": 0.16666680491946084,
+  "gioca_brier_baseline": 0.1915450248706259,
+  "bonus_brier_modello": 0.1039688638212916,
+  "bonus_frequenza": 0.13040259139287366,
+  "rose_simulate": 300,
+  "punti_giornata_modello": 66.96142249024477,
+  "punti_giornata_baseline": 66.54500709471444,
+  "punti_giornata_differenza": 0.41641539553033624
+ },
+ {
+  "stagione": "2024-25",
+  "righe_test": 16420,
+  "fv_mae_modello": 0.9220142551231226,
+  "fv_mae_baseline": 1.0217528174276354,
+  "fv_spearman_modello": 0.2081120704474182,
+  "fv_spearman_baseline": 0.11543581131646427,
+  "gioca_brier_modello": 0.16131972971051473,
+  "gioca_brier_baseline": 0.18829550683448373,
+  "bonus_brier_modello": 0.10645864783396372,
+  "bonus_frequenza": 0.13023602948036198,
+  "rose_simulate": 300,
+  "punti_giornata_modello": 66.70428292162786,
+  "punti_giornata_baseline": 66.50062200106629,
+  "punti_giornata_differenza": 0.2036609205615747
+ },
+ {
+  "stagione": "2025-26",
+  "righe_test": 16549,
+  "fv_mae_modello": 0.9193097942015627,
+  "fv_mae_baseline": 0.994572860936359,
+  "fv_spearman_modello": 0.20337343935338817,
+  "fv_spearman_baseline": 0.10634845053633075,
+  "gioca_brier_modello": 0.1628992362679008,
+  "gioca_brier_baseline": 0.1896781275807199,
+  "bonus_brier_modello": 0.1011922424772424,
+  "bonus_frequenza": 0.12311115231296932,
+  "rose_simulate": 300,
+  "punti_giornata_modello": 66.15617283950617,
+  "punti_giornata_baseline": 65.85727513227513,
+  "punti_giornata_differenza": 0.2988977072310348
+ }
+]
