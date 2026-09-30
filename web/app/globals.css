@@ -2618,6 +2618,7 @@ button.carta-scambio[aria-pressed="true"] {
 }
 
 /* ---------- Pagina Pronostici ---------- */
+/* Verde = squadra di casa, blu = squadra in trasferta, in tutta la pagina. */
 
 .sr-only {
   position: absolute;
@@ -2628,208 +2629,378 @@ button.carta-scambio[aria-pressed="true"] {
   white-space: nowrap;
 }
 
-.proiezione,
-.pronostici {
-  /* più larghe del testo, come il banco degli scambi */
-  position: relative;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(100vw - 3rem, 92rem);
-}
-
 .tabella-scorrevole {
   overflow-x: auto;
   max-width: 100%;
 }
 
-.tabella-proiezione {
-  width: 100%;
-  min-width: 44rem;
-  border-collapse: separate;
-  border-spacing: 0 2px;
-  font-size: 0.9rem;
+.pr-pagina {
+  --casa: var(--ruolo-d);
+  --trasferta: var(--ruolo-c);
+  --spazio: 1rem;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100vw - 3rem, 84rem);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: calc(var(--spazio) * 1.75);
 }
 
-.tabella-proiezione th,
-.tabella-proiezione td {
-  padding: 0.4rem 0.5rem;
-  text-align: center;
-  white-space: nowrap;
-}
+.pr-casa { background: var(--casa); }
+.pr-trasferta { background: var(--trasferta); }
+.pr-pari { background: var(--inchiostro-2); }
+.pr-casa-testo b { color: var(--casa); }
+.pr-trasferta-testo b { color: var(--trasferta); }
 
-.tabella-proiezione thead th {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+.pr-nota {
+  margin: 0.75rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
   color: var(--inchiostro-2);
-  white-space: normal;
 }
 
-.tabella-proiezione tbody tr {
-  background: var(--carta);
+/* riquadro base della pagina */
+.pr-box {
+  min-width: 0;
+  padding: 1.1rem 1.25rem 1.2rem;
+  background: var(--carta-2);
+  border: 1px solid var(--riga);
+  border-radius: 0.9rem;
 }
 
-.tabella-proiezione tbody th {
-  text-align: left;
-}
-
-.squadra-cella {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 700;
-}
-
-.squadra-cella .nota-piccola {
-  font-weight: 400;
-}
-
-.tabella-proiezione .pos {
+.pr-box h3 {
+  margin: 0 0 0.9rem;
   font-family: var(--font-titolo);
   font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ---- scelta della partita ---- */
+
+.pr-intestazione {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.6rem;
+}
+
+.pr-intestazione .etichetta {
+  margin: 0;
+}
+
+.pr-salto {
+  font-size: 0.85rem;
+  font-weight: 600;
   color: var(--inchiostro-2);
 }
 
-.barra-punti {
-  position: relative;
-  display: flex;
-  align-items: center;
-  min-width: 9rem;
-  height: 1.5rem;
-  border-radius: 0.3rem;
-  background: var(--riga);
-  overflow: hidden;
-}
-
-.barra-punti span {
-  position: absolute;
-  inset: 0 auto 0 0;
-  background: var(--ruolo-d);
-}
-
-.barra-punti b {
-  position: relative;
-  margin-left: auto;
-  padding-right: 0.4rem;
-  font-family: var(--font-titolo);
-}
-
-.calore {
-  --alfa: 0;
-  font-family: var(--font-dati);
-  background: color-mix(in srgb, var(--evidenziatore) calc(var(--alfa) * 100%), transparent);
-}
-
-.calore.retro {
-  background: color-mix(in srgb, var(--ruolo-a) calc(var(--alfa) * 100%), transparent);
-}
-
-.striscia-pronostici {
+.pr-partite {
   list-style: none;
-  margin: 0 0 1.25rem;
-  padding: 0.25rem 0.25rem 0.5rem;
+  margin: 0;
+  padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
-  gap: 0.5rem;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.6rem;
 }
 
-.striscia-pronostici button {
+.pr-partite button {
   width: 100%;
-  display: grid;
-  gap: 0.4rem;
   min-height: 0;
-  padding: 0.6rem 0.7rem;
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.65rem 0.75rem 0.7rem;
   color: var(--inchiostro);
   background: var(--carta-2);
   border: 1px solid var(--riga);
-  border-radius: 0.7rem;
+  border-radius: 0.75rem;
   font-weight: 600;
   text-align: left;
+  transition: border-color 0.15s;
 }
 
-.striscia-pronostici button[aria-pressed="true"] {
+.pr-partite button:hover {
+  border-color: var(--inchiostro-2);
+}
+
+.pr-partite button[aria-pressed="true"] {
   border-color: var(--evidenziatore);
-  box-shadow: 0 0 0 2px var(--evidenziatore);
+  box-shadow: 0 0 0 1px var(--evidenziatore), 0 6px 18px -8px color-mix(in srgb, var(--evidenziatore) 60%, transparent);
 }
 
-.striscia-squadre {
+.pr-partita-quando {
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--inchiostro-2);
+}
+
+.pr-partita-riga {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: 1.5rem minmax(0, 1fr) auto;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.85rem;
-  line-height: 1.25;
-  text-align: center;
+  font-size: 0.88rem;
 }
 
-.mini-esiti {
+.pr-partita-riga .logo-squadra,
+.pr-partita-riga .distintivo {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.pr-partita-riga > span:nth-child(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pr-partita-riga b {
+  font-family: var(--font-dati);
+  font-size: 0.78rem;
+  color: var(--inchiostro-2);
+}
+
+.pr-mini-esiti {
   display: flex;
   gap: 2px;
-  height: 0.35rem;
+  height: 0.3rem;
+  margin-top: 0.2rem;
   border-radius: 999px;
   overflow: hidden;
 }
 
-.scheda-pronostico {
+/* ---- scheda della partita ---- */
+
+.pr-scheda {
   display: grid;
-  gap: 1.25rem;
+  gap: var(--spazio);
 }
 
-.testata-pronostico {
+.pr-tabellone {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  gap: 1rem;
-  padding: 1rem 1.25rem;
-  border-radius: 0.8rem;
-  background: var(--carta-2);
+  gap: 1.25rem 2rem;
+  padding: 1.5rem 1.75rem 1.4rem;
+  border-radius: 1rem;
   border: 1px solid var(--riga);
+  background:
+    linear-gradient(100deg, color-mix(in srgb, var(--casa) 14%, transparent), transparent 38%),
+    linear-gradient(260deg, color-mix(in srgb, var(--trasferta) 14%, transparent), transparent 38%),
+    var(--carta-2);
 }
 
-.gol-attesi-grandi {
+.pr-tab-squadra {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.pr-tab-squadra.trasferta {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.pr-tab-squadra > div {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.pr-tab-squadra.trasferta > div {
+  justify-items: end;
+}
+
+.pr-tab-squadra .logo-squadra.grande,
+.pr-tab-squadra .distintivo.grande {
+  width: 4rem;
+  height: 4rem;
+  flex: none;
+}
+
+.pr-tab-squadra strong {
   font-family: var(--font-titolo);
   font-weight: 800;
-  font-size: 2rem;
-  color: var(--inchiostro);
+  font-size: clamp(1.6rem, 2.6vw, 2.4rem);
+  line-height: 1;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.gol-attesi-grandi small {
-  font-family: var(--font-testo);
-  font-weight: 400;
+.pr-tab-pos {
+  font-family: var(--font-dati);
+  font-size: 0.8rem;
+  color: var(--inchiostro-2);
+}
+
+.pr-pallini li {
+  width: 1.35rem;
+  height: 1.35rem;
+  font-size: 0.68rem;
+}
+
+.pr-tab-centro {
+  display: grid;
+  justify-items: center;
+  gap: 0.15rem;
+  text-align: center;
+}
+
+.pr-tab-quando {
+  font-size: 0.8rem;
+  color: var(--inchiostro-2);
+}
+
+.pr-tab-xg {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  font-size: 3.2rem;
+  line-height: 1;
+}
+
+.pr-tab-xg b:first-child { color: var(--casa); }
+.pr-tab-xg b:last-child { color: var(--trasferta); }
+
+.pr-tab-xg i {
+  font-style: normal;
+  color: var(--inchiostro-2);
+  font-size: 2rem;
+}
+
+.pr-tab-etichetta {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--inchiostro-2);
+}
+
+.pr-tab-esiti {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 0.6rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--riga);
+}
+
+.pr-barra-esiti {
+  display: flex;
+  gap: 3px;
+  height: 0.6rem;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.pr-esiti-numeri {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.pr-esiti-numeri > div:nth-child(2) { text-align: center; }
+.pr-esiti-numeri > div:nth-child(3) { text-align: right; }
+
+.pr-esiti-numeri dt {
+  font-size: 0.8rem;
+  color: var(--inchiostro-2);
+}
+
+.pr-esiti-numeri dt b {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.3rem;
+  height: 1.3rem;
+  margin-right: 0.25rem;
+  border-radius: 0.3rem;
+  font-family: var(--font-titolo);
+  color: #fff;
+  background: var(--inchiostro-2);
+}
+
+.pr-esiti-numeri > div:nth-child(1) dt b { background: var(--casa); }
+.pr-esiti-numeri > div:nth-child(3) dt b { background: var(--trasferta); }
+
+.pr-esiti-numeri dd {
+  margin: 0.15rem 0 0;
+}
+
+.pr-esito-p {
+  display: block;
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  font-size: 1.9rem;
+  line-height: 1.05;
+}
+
+.pr-esito-q {
+  font-family: var(--font-dati);
   font-size: 0.75rem;
   color: var(--inchiostro-2);
 }
 
-.griglia-pronostico {
+/* due colonne che si impilano da sole: niente buchi tra riquadri di altezza diversa */
+.pr-colonne {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.25rem;
-  align-items: stretch;
+  grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr);
+  gap: var(--spazio);
+  align-items: start;
 }
 
-.griglia-pronostico .largo-2 {
-  grid-column: span 2;
+.pr-colonna {
+  display: grid;
+  gap: var(--spazio);
+  min-width: 0;
 }
 
-.scelte {
+/* ---- il pronostico ---- */
+
+.pr-scelte {
   list-style: none;
-  margin: 0 0 0.75rem;
+  margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.6rem;
 }
 
-.scelte li {
+.pr-scelte li {
+  --p: 0%;
+  position: relative;
   display: grid;
-  gap: 0.15rem;
-  padding: 0.6rem 0.75rem;
-  border-radius: 0.6rem;
-  background: var(--carta);
-  border-left: 4px solid var(--evidenziatore);
+  grid-template-columns: 8.5rem minmax(0, 1fr) 4rem minmax(6.5rem, auto);
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.7rem 0.25rem;
+  border-top: 1px solid var(--riga);
 }
 
-.scelta-titolo {
+.pr-scelte li:first-child {
+  border-top: 0;
+  padding-top: 0.2rem;
+}
+
+/* la probabilità come filetto giallo sotto ogni scelta */
+.pr-scelte li::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: var(--p);
+  height: 2px;
+  background: var(--evidenziatore);
+}
+
+.pr-scelta-tipo {
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.07em;
@@ -2837,282 +3008,675 @@ button.carta-scambio[aria-pressed="true"] {
   color: var(--inchiostro-2);
 }
 
-.scelte strong {
-  font-size: 1.05rem;
-}
-
-.scelta-numeri {
+.pr-scelta-esito {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 0.35rem 0.8rem;
-  font-size: 0.8rem;
+  gap: 0.1rem 0.5rem;
+  min-width: 0;
+}
+
+.pr-scelta-esito strong {
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  font-size: 1.2rem;
+}
+
+.pr-scelta-esito span {
+  font-size: 0.85rem;
   color: var(--inchiostro-2);
 }
 
-.scelta-p {
+.pr-scelta-p {
   font-family: var(--font-titolo);
   font-weight: 800;
-  font-size: 1.3rem;
+  font-size: 1.45rem;
+  text-align: right;
+}
+
+.pr-scelta-quote {
+  display: grid;
+  justify-items: end;
+  gap: 0.1rem;
+  font-family: var(--font-dati);
+  font-size: 0.85rem;
+}
+
+.pr-scelta-quote small {
+  font-family: var(--font-testo);
+  font-size: 0.68rem;
+  color: var(--inchiostro-2);
+}
+
+/* ---- tutti i mercati ---- */
+
+.pr-mercati {
+  columns: 3 14rem;
+  column-gap: 1.5rem;
+}
+
+.pr-gruppo {
+  break-inside: avoid;
+  margin-bottom: 1.1rem;
+}
+
+.pr-gruppo-titolo,
+.pr-mercati li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 2.8rem 3rem;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pr-gruppo-titolo {
+  margin: 0 0 0.3rem;
+  padding: 0 0.4rem 0.3rem;
+  border-bottom: 1px solid var(--riga);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--inchiostro-2);
+}
+
+.pr-gruppo-titolo span:not(:first-child) {
+  text-align: right;
+}
+
+.pr-mercati ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+
+/* la probabilità come sfondo della riga */
+.pr-mercati li {
+  --p: 0%;
+  padding: 0.28rem 0.4rem;
+  border-radius: 0.3rem;
+  font-size: 0.84rem;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--inchiostro-2) 9%, transparent) var(--p), transparent var(--p));
+}
+
+.pr-mercati li.pr-probabile {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--evidenziatore) 13%, transparent) var(--p), transparent var(--p));
+}
+
+.pr-mercato-nome {
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.pr-mercato-nome b {
+  margin-right: 0.35rem;
+}
+
+.pr-mercato-nome span {
+  font-size: 0.78rem;
+  color: var(--inchiostro-2);
+}
+
+.pr-mercato-p,
+.pr-mercato-q {
+  font-family: var(--font-dati);
+  text-align: right;
+}
+
+.pr-mercato-p {
+  font-weight: 700;
+}
+
+.pr-mercato-q {
+  color: var(--inchiostro-2);
+}
+
+/* ---- statistiche a confronto ---- */
+
+.pr-confronto-testa {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.pr-confronto-squadra {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  font-weight: 700;
+}
+
+.pr-confronto-squadra.trasferta {
+  justify-content: end;
+}
+
+.pr-confronto-squadra small {
+  font-weight: 400;
+  font-size: 0.72rem;
+  color: var(--inchiostro-2);
+}
+
+.pr-confronto-squadra .logo-squadra,
+.pr-confronto-squadra .distintivo {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.reparti.pr-vista {
+  margin: 0;
+}
+
+.reparti.pr-vista button {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+.pr-confronto {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem 2rem;
+}
+
+.pr-confronto li {
+  display: grid;
+  grid-template-columns: 3.2rem minmax(0, 1fr) 3.2rem;
+  align-items: baseline;
+  gap: 0.3rem 0.5rem;
+}
+
+.pr-confronto-nome {
+  font-size: 0.8rem;
+  text-align: center;
+  color: var(--inchiostro-2);
+}
+
+.pr-valore {
+  font-family: var(--font-dati);
+  font-size: 0.9rem;
+  color: var(--inchiostro-2);
+}
+
+.pr-valore.trasferta {
+  text-align: right;
+}
+
+.pr-valore.meglio {
+  font-weight: 700;
   color: var(--inchiostro);
 }
 
-.esiti-grandi {
+/* barra divisa: la parte di ciascuna squadra parte dal proprio lato */
+.pr-confronto-barra {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 3px;
+  height: 0.45rem;
+}
+
+.pr-confronto-barra i {
+  min-width: 3px;
+  border-radius: 999px;
+  opacity: 0.3;
+}
+
+.pr-confronto-barra i.meglio {
+  opacity: 1;
+}
+
+/* ---- quote ---- */
+
+.pr-quote {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.pr-quote th,
+.pr-quote td {
+  padding: 0.5rem 0.35rem;
+  border-bottom: 1px solid var(--riga);
+  text-align: right;
+  white-space: nowrap;
+  font-family: var(--font-dati);
+}
+
+.pr-quote th:first-child {
+  text-align: left;
+  font-family: var(--font-testo);
+}
+
+.pr-quote thead th {
+  padding-top: 0;
+  font-family: var(--font-testo);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--inchiostro-2);
+}
+
+.pr-quote tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+.pr-quote td:not(.pr-equa) {
+  color: var(--inchiostro-2);
+}
+
+.pr-quote .pr-equa {
+  font-weight: 700;
+}
+
+/* ---- risultati esatti ---- */
+
+.pr-top-risultati {
+  list-style: none;
+  margin: 0 0 0.9rem;
+  padding: 0;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.4rem;
 }
 
-.esito-grande {
+.pr-top-risultati li {
   display: grid;
   justify-items: center;
-  gap: 0.1rem;
-  padding: 0.6rem 0.3rem;
-  border-radius: 0.6rem;
+  padding: 0.45rem 0.3rem;
+  border-radius: 0.5rem;
+  background: var(--carta);
 }
 
-.esito-grande .nota-piccola {
-  color: inherit;
-  opacity: 0.85;
-  font-size: 0.72rem;
+.pr-top-risultati li:first-child {
+  box-shadow: inset 0 0 0 1px var(--evidenziatore);
 }
 
-.esito-segno {
+.pr-top-risultati strong {
   font-family: var(--font-titolo);
   font-weight: 800;
-  font-size: 1rem;
+  font-size: 1.5rem;
+  line-height: 1.1;
 }
 
-.esito-p {
-  font-family: var(--font-titolo);
-  font-weight: 800;
-  font-size: 1.9rem;
-  line-height: 1;
+.pr-top-risultati span {
+  font-family: var(--font-dati);
+  font-size: 0.75rem;
+  color: var(--inchiostro-2);
 }
 
-.griglia-risultati {
+.pr-griglia {
   width: 100%;
+  table-layout: fixed;
   border-collapse: separate;
   border-spacing: 3px;
   font-family: var(--font-dati);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   text-align: center;
 }
 
-.griglia-risultati th {
+.pr-griglia th {
   font-weight: 700;
   color: var(--inchiostro-2);
 }
 
-.cella-risultato {
-  --alfa: 0;
-  height: 2rem;
-  border-radius: 0.3rem;
-}
-
-.cella-risultato.vittoria-casa {
-  background: color-mix(in srgb, var(--ruolo-d) calc(var(--alfa) * 100%), var(--carta));
-}
-
-.cella-risultato.pari {
-  background: color-mix(in srgb, var(--inchiostro-2) calc(var(--alfa) * 100%), var(--carta));
-}
-
-.cella-risultato.vittoria-trasferta {
-  background: color-mix(in srgb, var(--ruolo-c) calc(var(--alfa) * 100%), var(--carta));
-}
-
-.tabella-quote {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-}
-
-.tabella-quote th,
-.tabella-quote td {
-  padding: 0.45rem 0.4rem;
-  border-bottom: 1px solid var(--riga);
-  text-align: right;
+.pr-griglia-angolo {
+  width: 2.6rem;
   white-space: nowrap;
 }
 
-.tabella-quote th:first-child {
-  text-align: left;
+.pr-griglia-angolo .logo-squadra,
+.pr-griglia-angolo .distintivo {
+  width: 1rem;
+  height: 1rem;
+  vertical-align: middle;
 }
 
-.tabella-quote thead th {
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+.pr-griglia td {
+  --alfa: 0;
+  height: 2.1rem;
+  padding: 0;
+  border-radius: 0.3rem;
+  text-align: center;
+  vertical-align: middle;
+  color: var(--inchiostro);
+}
+
+.pr-griglia td.pr-casa { background: color-mix(in srgb, var(--casa) calc(var(--alfa) * 100%), var(--carta)); }
+.pr-griglia td.pr-trasferta { background: color-mix(in srgb, var(--trasferta) calc(var(--alfa) * 100%), var(--carta)); }
+.pr-griglia td.pr-pari { background: color-mix(in srgb, var(--inchiostro-2) calc(var(--alfa) * 100%), var(--carta)); }
+
+/* ---- da sapere (le schede esistenti, più compatte nella colonna laterale) ---- */
+
+.pr-sapere .sapere {
+  grid-template-columns: 3.6rem minmax(0, 1fr);
+  gap: 0.7rem;
+}
+
+/* ---- precedenti ---- */
+
+.pr-bilancio {
+  margin: 0 0 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+  font-size: 0.78rem;
   color: var(--inchiostro-2);
 }
 
-.tabella-quote .numero {
-  font-family: var(--font-dati);
-}
-
-.gruppi-mercati {
+.pr-bilancio > span {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
-  gap: 0.5rem 1.5rem;
+  justify-items: center;
+  padding: 0.4rem;
+  border-radius: 0.5rem;
+  background: var(--carta);
+  text-align: center;
 }
 
-.gruppo-mercato ul {
+.pr-bilancio b {
+  font-family: var(--font-titolo);
+  font-size: 1.4rem;
+  line-height: 1.1;
+  color: var(--inchiostro);
+}
+
+.pr-precedenti {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.3rem;
-}
-
-.gruppo-mercato li {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 3.5rem 2.6rem 2.6rem auto;
-  align-items: center;
-  gap: 0.5rem;
   font-size: 0.85rem;
 }
 
-.mercato-nome {
+.pr-precedenti li {
+  display: grid;
+  grid-template-columns: 4.6rem minmax(0, 1fr) 2.6rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0;
+  border-top: 1px solid var(--riga);
+}
+
+.pr-precedenti li:first-child {
+  border-top: 0;
+}
+
+.pr-precedente-data {
+  font-size: 0.75rem;
+  color: var(--inchiostro-2);
+}
+
+.pr-precedenti li > span:nth-child(2) {
+  text-align: right;
+}
+
+.pr-precedenti strong {
+  font-family: var(--font-titolo);
+  text-align: center;
+}
+
+.pr-precedenti .vince {
+  font-weight: 700;
+}
+
+/* ---- giocatori ---- */
+
+.pr-giocatori {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: start;
+  gap: var(--spazio);
+}
+
+.pr-evidenze {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.pr-evidenze li {
+  --p: 0%;
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.65rem;
+  padding-bottom: 0.45rem;
+}
+
+.pr-evidenze li::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: var(--p);
+  height: 2px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--inchiostro-2) 55%, transparent);
+}
+
+.pr-evidenze li:first-child::after {
+  background: var(--evidenziatore);
+}
+
+.pr-evidenza-nome {
+  display: grid;
+  min-width: 0;
+  line-height: 1.2;
+  font-size: 0.88rem;
+}
+
+.pr-evidenza-nome strong {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.gruppo-mercato .barra-p {
-  max-width: none;
-}
-
-.mercato-p {
-  font-family: var(--font-dati);
-  font-weight: 700;
-  text-align: right;
-}
-
-.mercato-quota,
-.mercato-libro {
-  font-family: var(--font-dati);
-  text-align: right;
+.pr-evidenza-nome small {
+  font-size: 0.72rem;
   color: var(--inchiostro-2);
 }
 
-.mercato-libro {
-  color: var(--inchiostro);
+.pr-evidenza-p {
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  font-size: 1.15rem;
 }
 
-.confronto-statistiche {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 0.35rem;
-  font-size: 0.9rem;
-}
-
-.confronto-statistiche thead th {
-  font-weight: 700;
-}
-
-.confronto-statistiche thead th:first-child {
-  text-align: right;
-}
-
-.confronto-statistiche thead th:last-child {
-  text-align: left;
-}
-
-.confronto-statistiche tbody th {
-  width: 11rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--inchiostro-2);
+.pr-fonti {
+  margin: 0;
   text-align: center;
 }
 
-.lato-sinistro,
-.lato-destro {
-  width: 40%;
+/* ---- proiezione del campionato ---- */
+
+.pr-proiezione {
+  padding: 1.4rem 1.5rem 1.2rem;
+  background: var(--carta-2);
+  border: 1px solid var(--riga);
+  border-radius: 1rem;
+  scroll-margin-top: 1rem;
 }
 
-.lato-sinistro {
-  text-align: right;
+.pr-proiezione-testa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 0.75rem 2rem;
+  margin-bottom: 1rem;
 }
 
-.lato-sinistro,
-.lato-destro {
-  position: relative;
+.pr-proiezione-testa h2 {
+  margin: 0;
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  font-size: 1.6rem;
+  text-transform: uppercase;
 }
 
-.barra-confronto {
-  display: inline-block;
-  height: 0.7rem;
-  max-width: calc(100% - 3.5rem);
-  vertical-align: middle;
-  border-radius: 999px;
-  background: var(--riga);
+.pr-proiezione-testa .pr-nota {
+  max-width: 44rem;
+  margin-top: 0.3rem;
 }
 
-.lato-sinistro .barra-confronto {
-  margin-left: 0.5rem;
-}
-
-.lato-destro .barra-confronto {
-  margin-right: 0.5rem;
-}
-
-.meglio .barra-confronto {
-  background: var(--ruolo-d);
-}
-
-.valore {
-  display: inline-block;
-  min-width: 2.8rem;
-  font-family: var(--font-dati);
-  font-weight: 700;
-}
-
-.lato-sinistro .valore {
-  text-align: right;
-}
-
-.sotto-titolo {
-  margin-top: 1rem !important;
-}
-
-.precedenti {
+.pr-legenda {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  gap: 0.3rem;
-  font-size: 0.85rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  font-size: 0.75rem;
+  color: var(--inchiostro-2);
 }
 
-.precedenti li {
-  display: grid;
-  grid-template-columns: 4.5rem minmax(0, 1fr) auto minmax(0, 1fr);
+.pr-legenda li {
+  display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
-.precedenti li > span:nth-child(2) {
-  text-align: right;
+.pr-legenda li::before {
+  content: "";
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 0.2rem;
+  background: var(--zona);
 }
 
-.precedenti strong {
+.pr-legenda .champions,
+.pr-tabella-proiezione .champions { --zona: var(--ruolo-c); }
+.pr-legenda .europa,
+.pr-tabella-proiezione .europa { --zona: var(--ruolo-p); }
+.pr-legenda .conference,
+.pr-tabella-proiezione .conference { --zona: var(--ruolo-d); }
+.pr-legenda .retro,
+.pr-tabella-proiezione .retro { --zona: var(--ruolo-a); }
+
+.pr-tabella-proiezione {
+  width: 100%;
+  min-width: 46rem;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.pr-tabella-proiezione th,
+.pr-tabella-proiezione td {
+  padding: 0.32rem 0.5rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.pr-tabella-proiezione thead th {
+  padding-bottom: 0.55rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--inchiostro-2);
+  border-bottom: 1px solid var(--riga);
+}
+
+.pr-tabella-proiezione tbody tr {
+  border-bottom: 1px solid color-mix(in srgb, var(--riga) 55%, transparent);
+}
+
+.pr-tabella-proiezione tbody tr:hover {
+  background: var(--carta);
+}
+
+/* la zona attesa come filetto a sinistra della posizione */
+.pr-pos {
+  width: 2.2rem;
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  color: var(--inchiostro-2);
+  box-shadow: inset 3px 0 0 var(--zona, transparent);
+}
+
+.pr-tabella-proiezione tbody th {
+  text-align: left;
+}
+
+.pr-squadra-cella {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-weight: 700;
+}
+
+.pr-squadra-cella .logo-squadra,
+.pr-squadra-cella .distintivo {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.pr-squadra-cella small {
+  font-weight: 400;
+  font-size: 0.72rem;
+  color: var(--inchiostro-2);
+}
+
+.pr-numero {
+  font-family: var(--font-dati);
+  color: var(--inchiostro-2);
+}
+
+.pr-barra-punti {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 10rem;
+  height: 1.35rem;
+  border-radius: 0.3rem;
+  background: var(--carta);
+  overflow: hidden;
+}
+
+.pr-barra-punti span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 0.3rem;
+  background: color-mix(in srgb, var(--ruolo-c) 55%, transparent);
+}
+
+.pr-barra-punti b {
+  position: relative;
+  margin-left: auto;
+  padding-right: 0.45rem;
   font-family: var(--font-titolo);
 }
 
-.precedenti .vince {
-  font-weight: 700;
+.pr-calore {
+  --alfa: 0;
+  width: 6.5rem;
+  font-family: var(--font-dati);
+  font-size: 0.82rem;
+  background: color-mix(in srgb, var(--evidenziatore) calc(var(--alfa) * 70%), transparent);
+  background-clip: padding-box;
+  border-inline: 2px solid var(--carta-2);
+}
+
+.pr-calore.retro {
+  background: color-mix(in srgb, var(--ruolo-a) calc(var(--alfa) * 80%), transparent);
+  background-clip: padding-box;
 }
 
 .avvertenza-gioco {
   max-width: 44rem;
-  margin: 2rem auto 0;
+  margin: 0 auto;
   padding: 0.75rem 1rem;
   border: 1px solid var(--riga);
   border-radius: 0.6rem;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--inchiostro-2);
   text-align: center;
 }
@@ -3123,59 +3687,146 @@ button.carta-scambio[aria-pressed="true"] {
   font-weight: 700;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .pr-partite button {
+    transition: none;
+  }
+}
+
+/* ---- tablet ---- */
+@media (max-width: 72rem) {
+  .pr-partite {
+    grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+  }
+  .pr-colonne {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* in una colonna sola: la colonna laterale si apre su due */
+  .pr-colonna:last-child {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+  .pr-confronto {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pr-giocatori {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 64rem) {
-  .proiezione,
-  .pronostici {
+  .pr-pagina {
     left: 0;
     transform: none;
     width: auto;
   }
-  .griglia-pronostico {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .griglia-pronostico .largo-2 {
-    grid-column: auto;
-  }
 }
 
-@media (max-width: 40rem) {
-  .testata-pronostico {
-    padding: 0.75rem;
+/* ---- telefono ---- */
+@media (max-width: 44rem) {
+  .pr-pagina {
+    --spazio: 0.75rem;
+  }
+  .pr-partite {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 0.4rem;
+  }
+  .pr-partite li {
+    flex: 0 0 10.5rem;
+    scroll-snap-align: start;
+  }
+  .pr-box {
+    padding: 0.9rem 0.9rem 1rem;
+  }
+  .pr-tabellone {
+    gap: 0.9rem 0.5rem;
+    padding: 1rem 0.9rem;
+  }
+  .pr-tab-squadra,
+  .pr-tab-squadra.trasferta {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
     gap: 0.4rem;
   }
-  .testata-pronostico .distintivo.grande,
-  .testata-pronostico .logo-squadra.grande {
-    display: none;
+  .pr-tab-squadra > div,
+  .pr-tab-squadra.trasferta > div {
+    justify-items: center;
   }
-  .gol-attesi-grandi {
+  .pr-tab-squadra .logo-squadra.grande,
+  .pr-tab-squadra .distintivo.grande {
+    width: 2.6rem;
+    height: 2.6rem;
+  }
+  .pr-tab-squadra strong {
+    font-size: 1.15rem;
+    max-width: 100%;
+  }
+  .pr-tab-pos {
+    font-size: 0.68rem;
+  }
+  .pr-pallini li {
+    width: 1rem;
+    height: 1rem;
+    font-size: 0.55rem;
+  }
+  .pr-tab-xg {
+    font-size: 2rem;
+  }
+  .pr-tab-xg i {
     font-size: 1.3rem;
   }
-  .confronto-statistiche tbody th {
-    width: 6.5rem;
-    font-size: 0.72rem;
+  .pr-esiti-numeri {
+    gap: 0.4rem;
   }
-  .barra-confronto {
-    display: none;
+  .pr-esiti-numeri dt {
+    font-size: 0.7rem;
   }
-  .gruppo-mercato li {
-    grid-template-columns: minmax(0, 1fr) 2.6rem 2.6rem auto;
+  .pr-esito-p {
+    font-size: 1.45rem;
   }
-  .gruppo-mercato .barra-p {
-    display: none;
+  .pr-esito-q {
+    font-size: 0.65rem;
   }
-}
-
-.griglia-risultati td,
-.griglia-risultati th {
-  text-align: center;
-}
-
-.scelte {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-@media (max-width: 40rem) {
-  .scelte {
+  .pr-colonna:last-child,
+  .pr-giocatori {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .pr-scelte li {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.2rem 0.75rem;
+  }
+  .pr-scelta-tipo {
+    grid-column: 1 / -1;
+  }
+  .pr-scelta-p {
+    grid-row: 2 / 4;
+    grid-column: 2;
+  }
+  .pr-scelta-quote {
+    grid-column: 1;
+    justify-items: start;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem 0.75rem;
+  }
+  .pr-confronto-testa {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .pr-confronto-testa .pr-vista {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: center;
+  }
+  .pr-confronto-squadra small {
+    display: none;
+  }
+  .pr-proiezione {
+    padding: 1rem 0.9rem;
+  }
+  .pr-proiezione-testa h2 {
+    font-size: 1.3rem;
   }
 }

@@ -13,8 +13,8 @@ export default function PaginaPronostici() {
         <p className="occhiello">Serie A · giornata {giornata.giornata} · {intervallo(giornata.partite.map((p) => p.data))}</p>
         <h1>Pronostici</h1>
         <p className="sottotitolo">
-          Come finisce il campionato secondo migliaia di simulazioni, e per ogni partita le probabilità di tutti i mercati con
-          la quota equa, le quote dei bookmaker, le statistiche della stagione, la forma e i precedenti.
+          Per ogni partita le probabilità di tutti i mercati con la quota equa, le quote dei bookmaker, le statistiche della
+          stagione, la forma e i precedenti. In fondo, come finisce il campionato secondo 20.000 simulazioni.
         </p>
       </section>
       <Pronostici partite={giornata.partite} giocatori={giocatori} probabili={probabili} loghi={loghi} dati={pronostici} />
