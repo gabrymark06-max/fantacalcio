@@ -19,6 +19,8 @@ export interface Regole {
   espulsione: number;
   /** Bonus al portiere che non subisce gol (0 = non previsto). */
   imbattibilita: number;
+  /** Bonus al player of the match (0 = non previsto). */
+  playerOfTheMatch: number;
   modificatoreDifesa: {
     attivo: boolean;
     /** Difensori considerati nella media oltre al portiere (3 nella tabella classica). */
@@ -44,6 +46,7 @@ export const REGOLE_STANDARD: Regole = {
   ammonizione: -0.5,
   espulsione: -1,
   imbattibilita: 0,
+  playerOfTheMatch: 0,
   modificatoreDifesa: {
     attivo: false,
     migliori: 3,
@@ -84,7 +87,8 @@ export function fantavotoRegole(g: Giocatore, r: Regole, orizzonte: Orizzonte): 
     (r.rigoreParato - STD.rigoreParato) * c.rigori_parati +
     (r.ammonizione - STD.ammonizione) * c.ammonito +
     (r.espulsione - STD.espulsione) * c.espulso +
-    r.imbattibilita * c.p_imbattuto
+    r.imbattibilita * c.p_imbattuto +
+    r.playerOfTheMatch * (c.potm ?? 0)
   );
 }
 

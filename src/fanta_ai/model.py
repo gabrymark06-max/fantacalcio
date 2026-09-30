@@ -10,6 +10,8 @@ Modelli (scikit-learn HistGradientBoosting, gestisce da sé i valori mancanti):
     nel backtest ordina i giocatori meglio della somma delle singole voci);
   - sulle righe in cui ha giocato: voto (regressione), gol/rigori/assist (Poisson),
     ammonizione (classificatore), e per i portieri gol subiti (Poisson);
+  - player of the match (bonus di alcune leghe, non nel fantavoto standard): classificatore
+    allenato dal 2024/25, la prima stagione in cui fantacalcio.it lo registra;
   - porta inviolata: e^(-gol attesi dell'avversario dalle quote). Sulla stagione 2025/26 è
     meglio calibrata di un classificatore dedicato (Brier 0,203 contro 0,233);
   - voci rare (espulsioni, autoreti, rigori sbagliati/parati): frequenze storiche per
@@ -58,6 +60,7 @@ class Models:
     assist: HistGradientBoostingRegressor
     ammonito: HistGradientBoostingClassifier
     gol_subiti: HistGradientBoostingRegressor  # solo portieri
+    potm: HistGradientBoostingClassifier  # player of the match, registrato dal 2024/25
     rare: dict = field(default_factory=dict)  # frequenze per ruolo delle voci rare
     quota_rigori_sbagliati: float = 0.0  # rigori sbagliati / rigori segnati
 
@@ -118,6 +121,8 @@ def train(df: pd.DataFrame) -> Models:
         ammonito=_classifier().fit(x, played["ammonito"]),
         # per i portieri i gol subiti crescono con i gol attesi dell'avversario: vincoli diversi
         gol_subiti=_regressor("poisson", monotono=False).fit(xk, keepers["gol_subiti"]),
+        # il premio esiste solo dal 2024/25: prima uno 0 vuol dire "non registrato", non "no"
+        potm=_classifier().fit(played.loc[played["anno"] >= 2024, FEATURES], played.loc[played["anno"] >= 2024, "potm"] > 0),
         rare={k: {r: float(v) for r, v in d.items()} for k, d in rare.items()},
         quota_rigori_sbagliati=float(played["rigori_sbagliati"].sum() / max(played["rigori_segnati"].sum(), 1)),
     )
@@ -137,6 +142,7 @@ def predict_components(models: Models, df: pd.DataFrame) -> pd.DataFrame:
     out["assist"] = np.where(keeper, 0.0, models.assist.predict(x))
     out["ammonito"] = models.ammonito.predict_proba(x)[:, 1]
     out["gol_subiti"] = np.where(keeper, models.gol_subiti.predict(x), 0.0)
+    out["potm"] = models.potm.predict_proba(x)[:, 1]
     out["p_imbattuto"] = np.where(keeper, np.exp(-df["xg_avversario"].to_numpy(dtype=float)), 0.0)
     for col, per_role in models.rare.items():
         out[col] = df["ruolo"].map(per_role).fillna(0.0).to_numpy()

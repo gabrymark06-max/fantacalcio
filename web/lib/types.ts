@@ -23,6 +23,8 @@ export interface Componenti {
   gol_subiti: number;
   rigori_parati: number;
   p_imbattuto: number;
+  /** Probabilità di essere il player of the match (bonus di alcune leghe). */
+  potm: number;
 }
 
 /** Una riga di web/data/giocatori.json (generato da fanta_ai.predict). */

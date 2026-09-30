@@ -161,6 +161,7 @@ def build_base() -> pd.DataFrame:
             "gol_subiti",
             "autoreti",
             "rigori_parati",
+            "potm",
         ]
     ]
     df = rows.merge(stats, on=["stagione", "squadra", "giornata", "id"], how="left")
@@ -169,7 +170,7 @@ def build_base() -> pd.DataFrame:
     df["fv"] = df["fv_fc"]
     df["titolare"] = df["giocato"] & ~df["subentrato"].fillna(False).astype(bool)
     df["subentrato_con_voto"] = df["giocato"] & df["subentrato"].fillna(False).astype(bool)
-    for col in COMPONENTI_CONTEGGIO:
+    for col in COMPONENTI_CONTEGGIO + ["potm"]:
         df[col] = df[col].fillna(0)
     for col in ["ammonito", "espulso"]:
         df[col] = df[col].fillna(False).astype(bool)

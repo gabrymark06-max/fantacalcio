@@ -48,7 +48,7 @@ SUBENTRO_DEFAULT = {"P": 0.02, "D": 0.2, "C": 0.3, "A": 0.3}
 SD_VOTO = {"P": 0.55, "D": 0.57, "C": 0.56, "A": 0.68}
 COMPONENTI_ESPORTATE = [
     "fv_std", "voto", "gol", "rigori_segnati", "rigori_sbagliati", "assist", "ammonito",
-    "espulso", "autoreti", "gol_subiti", "rigori_parati", "p_imbattuto",
+    "espulso", "autoreti", "gol_subiti", "rigori_parati", "p_imbattuto", "potm",
 ]
 
 
@@ -133,6 +133,7 @@ def future_rows(listone: pd.DataFrame, context: pd.DataFrame, giornata: int) -> 
     rows["stagione"], rows["anno"], rows["giornata"] = CURRENT_SEASON, int(CURRENT_SEASON[:4]), giornata
     rows["giocato"], rows["titolare"], rows["subentrato_con_voto"] = False, False, False
     rows["ammonito"], rows["espulso"], rows["bonus"] = False, False, False
+    rows["potm"] = 0
     for col in ["fv", "v_fc", "fv_fc"]:
         rows[col] = np.nan
     for col in COMPONENTI_CONTEGGIO:

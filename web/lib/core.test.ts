@@ -11,7 +11,7 @@ let nextId = 1;
 function comp(fv: number, extra: Partial<Componenti> = {}): Componenti {
   return {
     fv_std: fv, voto: 6, gol: 0.1, rigori_segnati: 0, rigori_sbagliati: 0, assist: 0.05, ammonito: 0.15,
-    espulso: 0.005, autoreti: 0, gol_subiti: 0, rigori_parati: 0, p_imbattuto: 0, ...extra,
+    espulso: 0.005, autoreti: 0, gol_subiti: 0, rigori_parati: 0, p_imbattuto: 0, potm: 0.03, ...extra,
   };
 }
 function g(ruolo: Ruolo, fv: number, opts: { p?: number; nome?: string; fvm?: number; c?: Partial<Componenti> } = {}): Giocatore {

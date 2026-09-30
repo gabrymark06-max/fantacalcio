@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { stato } from "@/components/Listone";
 import { conSegno, due, pct, voto } from "@/lib/format";
+import { codiceSegnalibro } from "@/lib/bookmarklet";
 import { importaRose, rosaDi, type Squadra } from "@/lib/league";
+import { decodificaImport, regoleDaLeghe, roseDaLeghe, ruoliDaLeghe, type Nota } from "@/lib/leghe";
 import { migliorFormazione, punteggio, type Contesto } from "@/lib/lineup";
 import { formattaNumero, leggiNumero } from "@/lib/numbers";
 import { fantavotoRegole, REGOLE_STANDARD, TUTTI_I_MODULI, type Regole } from "@/lib/rules";
@@ -18,6 +20,45 @@ interface LegaSalvata {
   squadre: Squadra[];
   mia: string | null;
   regole: Regole;
+  /** Ruoli cambiati dalla lega (id giocatore → ruolo), da Leghe Fantacalcio. */
+  ruoli?: Record<number, Ruolo>;
+  /** Presente se la lega arriva da Leghe Fantacalcio. */
+  origine?: {
+    lega: string;
+    importata: string;
+    note: Nota[];
+    fuoriListone: number;
+    impostazioni: unknown;
+  };
+}
+
+/** Rosa con i ruoli della lega applicati. */
+function rosaLega(squadra: Squadra, perId: Map<number, Giocatore>, ruoli: Record<number, Ruolo> = {}): Giocatore[] {
+  return rosaDi(squadra, perId).map((g) => (ruoli[g.id] && ruoli[g.id] !== g.ruolo ? { ...g, ruolo: ruoli[g.id] } : g));
+}
+
+/** Se l'URL porta dati dal segnalibro, li trasforma in una lega (e pulisce l'URL). */
+function daSegnalibro(giocatori: Giocatore[], precedente: LegaSalvata | null): LegaSalvata | null {
+  if (typeof window === "undefined" || !window.location.hash.includes("importa=")) return null;
+  const dati = decodificaImport(window.location.hash);
+  window.history.replaceState(null, "", window.location.pathname);
+  if (!dati) return null;
+  const rose = roseDaLeghe(dati, giocatori);
+  const { regole, note } = regoleDaLeghe(dati.impostazioni);
+  const miaPrima = precedente?.mia && rose.squadre.some((s) => s.nome === precedente.mia) ? precedente.mia : null;
+  return {
+    squadre: rose.squadre,
+    mia: rose.mia ?? miaPrima,
+    regole,
+    ruoli: ruoliDaLeghe(dati.impostazioni.ruoli),
+    origine: {
+      lega: dati.lega.nome,
+      importata: new Date().toISOString(),
+      note,
+      fuoriListone: rose.fuoriListone,
+      impostazioni: { calcolo: dati.impostazioni.calcolo, formazione: dati.impostazioni.formazione },
+    },
+  };
 }
 
 function leggi(): LegaSalvata | null {
@@ -67,9 +108,12 @@ export function Lega({ giocatori, giornata, sdVoto }: Props) {
   const [caricata, setCaricata] = useState(false);
 
   useEffect(() => {
-    setLega(leggi());
+    const salvata = leggi();
+    const importata = daSegnalibro(giocatori, salvata);
+    if (importata) salva(importata);
+    setLega(importata ?? salvata);
     setCaricata(true);
-  }, []);
+  }, [giocatori]);
 
   const aggiorna = (l: LegaSalvata | null) => {
     setLega(l);
@@ -77,7 +121,14 @@ export function Lega({ giocatori, giornata, sdVoto }: Props) {
   };
 
   if (!caricata) return null;
-  if (!lega) return <Importa giocatori={giocatori} onImporta={aggiorna} />;
+  if (!lega) {
+    return (
+      <>
+        <CollegaLeghe />
+        <Importa giocatori={giocatori} onImporta={aggiorna} />
+      </>
+    );
+  }
 
   const ctx: Contesto = { regole: lega.regole, orizzonte: "giornata", sdVoto };
   const mia = lega.squadre.find((s) => s.nome === lega.mia) ?? null;
@@ -101,16 +152,22 @@ export function Lega({ giocatori, giornata, sdVoto }: Props) {
         <p className="nota-piccola">
           {lega.squadre.length} squadre importate. Rose e regole restano salvate solo in questo browser.
         </p>
+        {lega.origine && <RiepilogoImport origine={lega.origine} ruoli={Object.keys(lega.ruoli ?? {}).length} />}
+        {lega.origine && (
+          <p className="nota-piccola">
+            Dopo scambi o svincoli: apri la lega su Leghe Fantacalcio e clicca di nuovo il segnalibro <Segnalibro compatto />
+          </p>
+        )}
         <RegoleLega regole={lega.regole} onChange={(regole) => aggiorna({ ...lega, regole })} />
       </section>
 
       {mia ? (
         <>
-          <Formazione rosa={rosaDi(mia, perId)} giornata={giornata} ctx={ctx} />
+          <Formazione rosa={rosaLega(mia, perId, lega.ruoli)} giornata={giornata} ctx={ctx} />
           <Scambi
             key={JSON.stringify(lega.regole) + mia.nome}
-            mia={rosaDi(mia, perId)}
-            altre={lega.squadre.filter((s) => s.nome !== mia.nome).map((s) => ({ nome: s.nome, rosa: rosaDi(s, perId) }))}
+            mia={rosaLega(mia, perId, lega.ruoli)}
+            altre={lega.squadre.filter((s) => s.nome !== mia.nome).map((s) => ({ nome: s.nome, rosa: rosaLega(s, perId, lega.ruoli) }))}
             ctx={ctx}
             giornateRimanenti={Math.max(1, 38 - giornata + 1)}
           />
@@ -123,6 +180,95 @@ export function Lega({ giocatori, giornata, sdVoto }: Props) {
 }
 
 // ---------- Importazione ----------
+
+/** Il pulsante da trascinare nei preferiti. React non permette href "javascript:", lo si imposta a mano. */
+function Segnalibro({ compatto = false }: { compatto?: boolean }) {
+  const ref = useRef<HTMLAnchorElement>(null);
+  useEffect(() => {
+    ref.current?.setAttribute("href", codiceSegnalibro(window.location.origin));
+  }, []);
+  return (
+    <a
+      ref={ref}
+      className={compatto ? "segnalibro compatto" : "segnalibro"}
+      onClick={(e) => {
+        e.preventDefault();
+        alert("Trascina questo pulsante nella barra dei preferiti, poi cliccalo dalla pagina della tua lega su leghe.fantacalcio.it.");
+      }}
+      draggable
+    >
+      Importa in Chi Schiero
+    </a>
+  );
+}
+
+function CollegaLeghe() {
+  return (
+    <section className="scheda" aria-labelledby="collega-titolo">
+      <h2 id="collega-titolo">Importa da Leghe Fantacalcio</h2>
+      <p>Rose di tutte le squadre, bonus e malus, moduli e ruoli della tua lega, in un clic.</p>
+      <ol className="passi">
+        <li>
+          Trascina questo pulsante nella barra dei preferiti: <Segnalibro />
+        </li>
+        <li>Apri la tua lega su leghe.fantacalcio.it, con il login fatto.</li>
+        <li>Clicca il preferito «Importa in Chi Schiero»: si apre questa pagina con tutto compilato.</li>
+      </ol>
+      <p className="nota-piccola">
+        Il segnalibro legge i dati con la sessione già aperta nel tuo browser. Password e codice di accesso non
+        escono da Leghe Fantacalcio: qui arrivano solo rose e impostazioni. Funziona con le leghe Classic.
+      </p>
+    </section>
+  );
+}
+
+function RiepilogoImport({ origine, ruoli }: { origine: NonNullable<LegaSalvata["origine"]>; ruoli: number }) {
+  const [copiato, setCopiato] = useState(false);
+  const daControllare = origine.note.filter((n) => n.tipo === "controlla");
+  const testo = JSON.stringify(origine.impostazioni, null, 1);
+  return (
+    <div className="riepilogo-import">
+      <p>
+        Importata da Leghe Fantacalcio: <strong>{origine.lega}</strong>, il{" "}
+        {new Date(origine.importata).toLocaleDateString("it-IT", { day: "numeric", month: "long" })}.
+        {origine.fuoriListone === 1 && " 1 giocatore non è più nel listone di Serie A e non viene contato."}
+        {origine.fuoriListone > 1 && ` ${origine.fuoriListone} giocatori non sono più nel listone di Serie A e non vengono contati.`}
+        {ruoli === 1 && " 1 giocatore ha il ruolo cambiato dalla lega."}
+        {ruoli > 1 && ` ${ruoli} giocatori hanno il ruolo cambiato dalla lega.`}
+      </p>
+      <ul className="note-import">
+        {origine.note.map((n, i) => (
+          <li key={i} className={n.tipo === "ok" ? "nota-ok" : "nota-controlla"}>
+            {n.testo}
+          </li>
+        ))}
+      </ul>
+      {daControllare.length > 0 && (
+        <details>
+          <summary>Impostazioni originali della lega</summary>
+          <p className="nota-piccola">
+            Servono per leggere in automatico anche i modificatori: copiale e mandale a chi cura il sito.
+          </p>
+          <button
+            type="button"
+            className="secondario"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(testo);
+                setCopiato(true);
+              } catch {
+                setCopiato(false);
+              }
+            }}
+          >
+            {copiato ? "Copiate" : "Copia le impostazioni"}
+          </button>
+          <pre className="grezzo">{testo}</pre>
+        </details>
+      )}
+    </div>
+  );
+}
 
 function Importa({ giocatori, onImporta }: { giocatori: Giocatore[]; onImporta: (l: LegaSalvata) => void }) {
   const [testo, setTesto] = useState("");
@@ -203,6 +349,7 @@ const CAMPI: { chiave: CampoNumerico; etichetta: string }[] = [
   { chiave: "assist", etichetta: "Assist" },
   { chiave: "golSubito", etichetta: "Gol subito (portiere)" },
   { chiave: "imbattibilita", etichetta: "Imbattibilità portiere" },
+  { chiave: "playerOfTheMatch", etichetta: "Player of the match" },
   { chiave: "rigoreParato", etichetta: "Rigore parato" },
   { chiave: "rigoreSbagliato", etichetta: "Rigore sbagliato" },
   { chiave: "autorete", etichetta: "Autorete" },
@@ -263,6 +410,7 @@ function riassunto(r: Regole): string {
   if (JSON.stringify(r) === JSON.stringify(REGOLE_STANDARD)) return "standard fantacalcio.it";
   if (r.modificatoreDifesa.attivo) parti.push("modificatore difesa");
   if (r.imbattibilita) parti.push(`imbattibilità ${conSegno(r.imbattibilita).replace(",00", "")}`);
+  if (r.playerOfTheMatch) parti.push(`player of the match ${conSegno(r.playerOfTheMatch).replace(",00", "")}`);
   if (r.gol.D !== 3 || r.gol.C !== 3) parti.push("gol diversi per ruolo");
   if (r.moduli.length < TUTTI_I_MODULI.length) parti.push(`${r.moduli.length} moduli`);
   return parti.length ? parti.join(", ") : "personalizzate";
