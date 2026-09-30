@@ -105,16 +105,18 @@ function Banco({
     cedoG.length > 0 && cedoG.map((g) => g.ruolo).sort().join() === ricevoG.map((g) => g.ruolo).sort().join();
   const valutato = ruoliUguali ? valutaScambio(mia, loro, cedoG, ricevoG, controparte, ctxStagione) : null;
 
+  // scambi suggeriti solo con la squadra scelta a destra: si ricercano quando cambia
   const cerca = () => {
     setCalcolo(true);
+    const con = altre.filter((a) => a.nome === controparte);
     // lascia al browser il tempo di mostrare "Sto cercando…" prima del calcolo
-    setTimeout(() => {
-      setSuggeriti(suggerisciScambi(mia, altre, ctx));
+    const t = setTimeout(() => {
+      setSuggeriti(suggerisciScambi(mia, con, ctx));
       setCalcolo(false);
     }, 30);
+    return () => clearTimeout(t);
   };
-  // gli scambi suggeriti si cercano appena si apre la pagina
-  useEffect(cerca, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(cerca, [controparte]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const alterna = (lista: number[], set: (x: number[]) => void, id: number) =>
     set(lista.includes(id) ? lista.filter((x) => x !== id) : [...lista, id]);
@@ -156,17 +158,17 @@ function Banco({
 
         <section className="suggeriti" aria-labelledby="suggeriti-titolo">
           <div className="suggeriti-testa">
-            <h2 id="suggeriti-titolo">Scambi suggeriti</h2>
-            <button type="button" className="secondario" onClick={cerca} disabled={calcolo}>
+            <h2 id="suggeriti-titolo">Scambi suggeriti con {controparte}</h2>
+            <button type="button" className="secondario" onClick={() => void cerca()} disabled={calcolo}>
               {calcolo ? "Sto cercando…" : "Aggiorna"}
             </button>
           </div>
           {suggeriti === null ? (
-            <p className="nota-piccola">Sto cercando gli scambi che convengono a te e che l&apos;altro può accettare…</p>
+            <p className="nota-piccola">Sto cercando gli scambi con {controparte} che convengono a te e che possono accettare…</p>
           ) : suggeriti.length === 0 ? (
             <p className="nota-piccola">
-              Nessuno scambio ti fa guadagnare almeno {due(SOGLIE.guadagnoMinimo)} punti a giornata restando accettabile per
-              l&apos;altro. Prova a comporne uno toccando i giocatori.
+              Con {controparte} nessuno scambio ti fa guadagnare almeno {due(SOGLIE.guadagnoMinimo)} punti a giornata restando
+              accettabile per loro. Prova un&apos;altra squadra o componi uno scambio toccando i giocatori.
             </p>
           ) : (
             <ol className="carte-scambio">
@@ -439,7 +441,6 @@ function CartaScambio({ s, attiva, onApri }: { s: Scambio; attiva: boolean; onAp
   const etichetta = etichettaAccetta(s.pAccetta);
   return (
     <button type="button" className="carta-scambio" aria-pressed={attiva} onClick={onApri}>
-      <span className="carta-squadra">con {s.controparte}</span>
       <span className="carta-corpo">
         <Lato titolo="cedi" giocatori={s.cedo} />
         <span className="carta-freccia" aria-hidden="true">
