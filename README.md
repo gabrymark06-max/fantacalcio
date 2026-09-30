@@ -80,6 +80,16 @@ Serie A, poi ricerca per nome ed età per chi è stato ceduto). Sono protette da
 `web/data/foto-personali.json`, escluso da git, quindi il sito pubblicato non le ha e mostra
 solo quelle di Commons.
 
+## Probabili formazioni
+
+La pagina della giornata mostra una partita alla volta: i due campi, il confronto titolare per
+titolare (probabilità di giocare e fantavoto atteso del modello), la panchina, i ballottaggi e gli
+indisponibili. Modulo, titolari, ballottaggi e note sugli indisponibili vengono da SOS Fanta
+(`scraping.titolarita` → `data/raw/probabili.json` → `fanta_ai.probabili` →
+`web/data/probabili.json`, passo già incluso nella pipeline). Sono contenuti loro: il file è
+escluso da git e sul sito pubblicato le formazioni sono ricavate dal modello (per ogni reparto
+chi ha la probabilità di giocare più alta).
+
 ## Aggiornamento automatico
 
 `scripts/aggiorna.ps1` esegue la pipeline e, se le previsioni cambiano, fa commit (e push se

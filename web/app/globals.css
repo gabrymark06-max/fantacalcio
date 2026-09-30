@@ -1532,3 +1532,468 @@ button.carta-scambio[aria-pressed="true"] {
     font-size: 1.1rem;
   }
 }
+
+/* ---------- Probabili formazioni: una partita alla volta ---------- */
+
+.probabili {
+  /* più largo del testo della pagina, come il banco degli scambi */
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100vw - 3rem, 92rem);
+  margin-bottom: 3rem;
+}
+
+.probabili > .etichetta {
+  max-width: var(--misura);
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+.distintivo {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35), 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.distintivo.grande {
+  width: 3.4rem;
+  height: 3.4rem;
+  font-size: 1.05rem;
+}
+
+.striscia-partite {
+  list-style: none;
+  margin: 0 0 1.25rem;
+  padding: 0.25rem 0.25rem 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.striscia-partite li {
+  flex: 1 0 auto;
+}
+
+.striscia-partite button {
+  width: 100%;
+  display: grid;
+  justify-items: center;
+  gap: 0.3rem;
+  min-height: 0;
+  padding: 0.5rem 0.75rem;
+  color: var(--inchiostro);
+  background: var(--carta-2);
+  border: 1px solid var(--riga);
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.striscia-partite button[aria-pressed="true"] {
+  border-color: var(--evidenziatore);
+  box-shadow: 0 0 0 2px var(--evidenziatore);
+}
+
+.striscia-partite .coppia {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.striscia-quando {
+  font-size: 0.7rem;
+  color: var(--inchiostro-2);
+  white-space: nowrap;
+}
+
+.testata-partita {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.squadra-partita {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.squadra-partita.trasferta {
+  justify-content: end;
+  text-align: right;
+}
+
+.squadra-partita strong {
+  display: block;
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  font-size: 2rem;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.modulo-partita {
+  white-space: nowrap;
+  font-family: var(--font-dati);
+  font-size: 0.9rem;
+  color: var(--inchiostro-2);
+}
+
+.centro-partita {
+  display: grid;
+  justify-items: center;
+  gap: 0.2rem;
+  font-size: 0.85rem;
+  color: var(--inchiostro-2);
+  text-align: center;
+}
+
+.centro-partita .esiti {
+  font-family: var(--font-dati);
+  color: var(--inchiostro);
+}
+
+.tavolo-partita {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.colonna-partita {
+  display: grid;
+  gap: 1rem;
+}
+
+.campo-partita {
+  padding-block: 1rem;
+  gap: 0.75rem;
+}
+
+.pedina-partita {
+  display: grid;
+  justify-items: center;
+  gap: 0.2rem;
+  width: 4.3rem;
+  color: var(--pedina-testo);
+}
+
+/* Fantavoto atteso: verde se alto, giallo se buono, neutro sotto; spento se non gioca */
+.fv-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 2rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.35rem;
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  font-size: 0.85rem;
+  line-height: 1.1;
+}
+
+.gettone-foto .fv-badge {
+  position: absolute;
+  left: -0.5rem;
+  bottom: -0.2rem;
+  min-width: 1.9rem;
+  font-size: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.fv-badge.grande {
+  min-width: 2.8rem;
+  padding: 0.35rem 0.4rem;
+  font-size: 1.15rem;
+  border-radius: 0.5rem;
+}
+
+.fv-alto { background: var(--ruolo-d); color: #fff; }
+.fv-medio { background: var(--evidenziatore); color: var(--su-giallo); }
+.fv-basso { background: var(--riga); color: var(--inchiostro); }
+.fv-spento { background: transparent; color: var(--inchiostro-2); box-shadow: inset 0 0 0 1px var(--riga); }
+
+.gettone-foto .fv-spento {
+  background: var(--carta-2);
+}
+
+/* Confronto al centro */
+
+.confronto {
+  background: var(--carta-2);
+  border: 1px solid var(--riga);
+  border-radius: 0.8rem;
+  padding: 0.75rem;
+}
+
+.legenda-confronto {
+  margin: 0 0 0.5rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--inchiostro-2);
+}
+
+.duelli {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.duelli li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.35rem;
+}
+
+.riga-duello {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.5rem;
+  background: var(--carta);
+}
+
+.riga-duello.trasferta {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  direction: rtl;
+}
+
+.riga-duello.trasferta > * {
+  direction: ltr;
+}
+
+.riga-duello.trasferta .duello-chi {
+  text-align: right;
+}
+
+.riga-duello .gettone-foto .ruolo {
+  width: 0.95rem;
+  height: 0.95rem;
+  font-size: 0.55rem;
+  right: -0.25rem;
+  bottom: -0.2rem;
+}
+
+.duello-chi {
+  display: grid;
+  min-width: 0;
+}
+
+.duello-nome {
+  font-weight: 700;
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.duello-p {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-dati);
+  font-size: 0.72rem;
+  color: var(--inchiostro-2);
+}
+
+.riga-duello.trasferta .duello-p {
+  flex-direction: row-reverse;
+}
+
+.barra-p {
+  flex: 1;
+  max-width: 4.5rem;
+  height: 0.25rem;
+  border-radius: 999px;
+  background: var(--riga);
+  overflow: hidden;
+}
+
+.barra-p span {
+  display: block;
+  height: 100%;
+  background: var(--ruolo-d);
+}
+
+.riga-duello.trasferta .barra-p span {
+  margin-left: auto;
+}
+
+.titolo-panchina {
+  margin: 1rem 0 0.5rem;
+  text-align: center;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--inchiostro-2);
+}
+
+/* Ballottaggi e indisponibili sotto i campi */
+
+.riquadro {
+  background: var(--carta-2);
+  border: 1px solid var(--riga);
+  border-radius: 0.8rem;
+  padding: 0.75rem 0.9rem;
+}
+
+.riquadro h3 {
+  margin: 0 0 0.6rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--riga);
+  font-size: 1rem;
+}
+
+.ballottaggi,
+.indisponibili {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.ballottaggi li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.2rem 0.6rem;
+  align-items: center;
+}
+
+.duo-facce {
+  display: flex;
+  grid-row: span 2;
+}
+
+.duo-facce .faccia + .faccia {
+  margin-left: -0.5rem;
+}
+
+.ballottaggio-testo {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.ballottaggio-testo .contro {
+  color: var(--inchiostro-2);
+  text-align: right;
+}
+
+.barra-ballottaggio {
+  height: 0.25rem;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--evidenziatore) var(--quota), var(--riga) var(--quota));
+}
+
+.indisponibili li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.6rem;
+  align-items: start;
+  font-size: 0.85rem;
+}
+
+.indisponibili li > span:last-child {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.stato-indisponibile {
+  justify-self: start;
+  padding: 0 0.35rem;
+  border-radius: 0.2rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: var(--riga);
+}
+
+.nota-indisponibile {
+  color: var(--inchiostro-2);
+  font-size: 0.8rem;
+}
+
+.fonte-probabili {
+  max-width: var(--misura);
+  margin: 1rem auto 0;
+  padding-inline: 1rem;
+  text-align: center;
+}
+
+@media (max-width: 64rem) {
+  .probabili {
+    left: 0;
+    transform: none;
+    width: auto;
+  }
+  .tavolo-partita {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* su schermi stretti prima il confronto, poi le due squadre */
+  .confronto {
+    order: -1;
+  }
+}
+
+@media (max-width: 40rem) {
+  .squadra-partita strong {
+    font-size: 1.2rem;
+  }
+  .distintivo.grande {
+    width: 2.6rem;
+    height: 2.6rem;
+    font-size: 0.85rem;
+  }
+  .testata-partita {
+    gap: 0.5rem;
+  }
+  .centro-partita {
+    font-size: 0.72rem;
+  }
+  .centro-partita .esiti {
+    font-size: 0.68rem;
+  }
+  .testata-partita .distintivo.grande {
+    display: none;
+  }
+  .modulo-partita {
+    font-size: 0.75rem;
+  }
+  .riga-duello {
+    gap: 0.35rem;
+    padding: 0.3rem;
+  }
+  .riga-duello .faccia {
+    width: 1.6rem;
+    height: 1.6rem;
+  }
+  .duello-nome {
+    font-size: 0.75rem;
+  }
+  .barra-p {
+    display: none;
+  }
+  .fv-badge.grande {
+    min-width: 2.2rem;
+    padding: 0.25rem;
+    font-size: 0.95rem;
+  }
+  .pedina-partita {
+    width: 3.9rem;
+  }
+}

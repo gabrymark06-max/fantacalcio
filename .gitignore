@@ -12,3 +12,5 @@ __pycache__/
 
 # Foto protette da diritto d'autore (Transfermarkt): solo per uso personale, mai pubblicate
 /web/data/foto-personali.json
+# Probabili formazioni e note di SOS Fanta: contenuti loro, solo in locale
+/web/data/probabili.json

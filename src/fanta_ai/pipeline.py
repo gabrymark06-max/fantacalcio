@@ -15,7 +15,7 @@ import traceback
 
 import pandas as pd
 
-from fanta_ai import evaluate, predict
+from fanta_ai import evaluate, predict, probabili
 from fanta_ai.dataset import DATA_DIR
 from fanta_ai.predict import CURRENT_SEASON
 from fanta_ai.scraping import calendario, listone, quote, titolarita, voti
@@ -59,6 +59,7 @@ def main() -> None:
         sys.exit(1)
     if not step("previsioni", predict.main, essential=True):
         sys.exit(1)
+    step("probabili formazioni", probabili.main, essential=False)
     step("accuratezza", evaluate.main, essential=False)
 
 
