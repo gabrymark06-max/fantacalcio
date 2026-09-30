@@ -68,6 +68,31 @@ def main() -> None:
     out.write_text(json.dumps(matches, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"Giornata {matches[0]['giornata']}: {len(matches)} partite salvate in {out}")
 
+    # le giornate successive servono agli scambi (calendario più o meno difficile): un di più,
+    # se non si leggono resta valida la giornata corrente
+    try:
+        prossime = prossime_giornate(matches[0]["giornata"])
+        (DATA_DIR / "raw" / "calendario_prossime.json").write_text(json.dumps(prossime, ensure_ascii=False, indent=1), encoding="utf-8")
+        print(f"Calendario: {len({m['giornata'] for m in prossime})} giornate, {len(prossime)} partite")
+    except Exception as exc:
+        print(f"Prossime giornate non lette ({exc})")
+
+
+# Quante giornate contano per il calendario degli scambi (compresa la prossima)
+GIORNATE_CALENDARIO = 5
+
+
+def prossime_giornate(da: int, quante: int = GIORNATE_CALENDARIO) -> list[dict]:
+    """Partite delle giornate da `da` a `da + quante - 1` (pagina /serie-a/calendario/N)."""
+    partite = []
+    for g in range(da, min(38, da + quante - 1) + 1):
+        html = fetch_html(f"{URL}/{g}", DATA_DIR / "cache" / "calendario", refresh=True)
+        della = [m for m in parse_calendario(html) if m["giornata"] == g]
+        if len(della) != 10:
+            raise RuntimeError(f"Giornata {g}: attese 10 partite, trovate {len(della)}")
+        partite += della
+    return partite
+
 
 if __name__ == "__main__":
     main()

@@ -4,15 +4,17 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Campo, CreditiFoto, Faccia } from "@/components/Campo";
+import { ChiSchiero, Svincolati } from "@/components/Consigli";
 import { legaEsempio, useLega, roseDellaLega, type LegaSalvata } from "@/components/legaStore";
 
 import { stato } from "@/components/Listone";
 import { conSegno, due, pct, voto } from "@/lib/format";
 import { codiceSegnalibro } from "@/lib/bookmarklet";
 import { importaRose } from "@/lib/league";
+import { liberi } from "@/lib/svincolati";
 import { migliorFormazione, type Contesto } from "@/lib/lineup";
 import { formattaNumero, leggiNumero } from "@/lib/numbers";
-import { fantavotoRegole, REGOLE_STANDARD, TUTTI_I_MODULI, type Regole } from "@/lib/rules";
+import { componenti, fantavotoRegole, pGioca, REGOLE_STANDARD, TUTTI_I_MODULI, type Regole } from "@/lib/rules";
 import { NOMI_RUOLO, RUOLI, type Giocatore, type Ruolo } from "@/lib/types";
 
 interface Props {
@@ -36,7 +38,9 @@ export function Lega({ giocatori, giornata, sdVoto }: Props) {
   }
 
   const ctx: Contesto = { regole: lega.regole, orizzonte: "giornata", sdVoto };
-  const { mia } = roseDellaLega(lega, perId);
+  const { mia, altre } = roseDellaLega(lega, perId);
+  const formazioneMia = mia ? migliorFormazione(mia, ctx) : null;
+  const svincolati = mia ? liberi(giocatori, [mia, ...altre.map((a) => a.rosa)]) : [];
   return (
     <>
       <section className="scheda">
@@ -77,6 +81,8 @@ export function Lega({ giocatori, giornata, sdVoto }: Props) {
       {mia ? (
         <>
           <Formazione rosa={mia} giornata={giornata} ctx={ctx} />
+          {formazioneMia && <ChiSchiero key={lega.mia} rosa={mia} formazione={formazioneMia} ctx={ctx} />}
+          <Svincolati mia={mia} liberi={svincolati} ctx={ctx} />
           <p className="rimando">
             <Link href="/scambi">Cerca scambi per la tua squadra →</Link>
           </p>
@@ -293,7 +299,7 @@ const PRESET: { nome: string; regole: Regole }[] = [
   },
 ];
 
-type CampoNumerico = Exclude<keyof Regole, "gol" | "modificatoreDifesa" | "moduli">;
+type CampoNumerico = Exclude<keyof Regole, "gol" | "modificatoreDifesa" | "capitano" | "moduli">;
 const CAMPI: { chiave: CampoNumerico; etichetta: string }[] = [
   { chiave: "rigoreSegnato", etichetta: "Rigore segnato" },
   { chiave: "assist", etichetta: "Assist" },
@@ -359,6 +365,7 @@ function riassunto(r: Regole): string {
   const parti = [];
   if (JSON.stringify(r) === JSON.stringify(REGOLE_STANDARD)) return "standard fantacalcio.it";
   if (r.modificatoreDifesa.attivo) parti.push("modificatore difesa");
+  if (r.capitano?.attivo) parti.push("modificatore capitano");
   if (r.imbattibilita) parti.push(`imbattibilità ${conSegno(r.imbattibilita).replace(",00", "")}`);
   if (r.playerOfTheMatch) parti.push(`player of the match ${conSegno(r.playerOfTheMatch).replace(",00", "")}`);
   if (new Set(Object.values(r.gol)).size > 1) parti.push("gol diversi per ruolo");
@@ -369,6 +376,8 @@ function riassunto(r: Regole): string {
 function RegoleLega({ regole, onChange }: { regole: Regole; onChange: (r: Regole) => void }) {
   const md = regole.modificatoreDifesa;
   const setMd = (patch: Partial<Regole["modificatoreDifesa"]>) => onChange({ ...regole, modificatoreDifesa: { ...md, ...patch } });
+  const cap = regole.capitano ?? REGOLE_STANDARD.capitano!;
+  const setCap = (patch: Partial<NonNullable<Regole["capitano"]>>) => onChange({ ...regole, capitano: { ...cap, ...patch } });
   return (
     <details className="regole">
       <summary>
@@ -462,6 +471,37 @@ function RegoleLega({ regole, onChange }: { regole: Regole; onChange: (r: Regole
       </fieldset>
 
       <fieldset>
+        <legend>Modificatore capitano</legend>
+        <label className="spunta">
+          <input
+            type="checkbox"
+            checked={!!cap.attivo}
+            onChange={(e) => setCap({ attivo: e.target.checked })}
+          />{" "}
+          Attivo (bonus o malus secondo il voto del capitano; del vice se il capitano non gioca)
+        </label>
+        {cap.attivo && (
+          <div className="griglia-regole">
+            {cap.fasce.map((f, i) => (
+              <div key={i} className="fascia">
+                <Numero
+                  etichetta={f.da === 0 ? "Voto da (0 = sotto la fascia dopo)" : "Voto da"}
+                  passo={0.5}
+                  valore={f.da}
+                  onChange={(v) => setCap({ fasce: cap.fasce.map((x, j) => (j === i ? { ...x, da: v } : x)) })}
+                />
+                <Numero
+                  etichetta="Bonus"
+                  valore={f.bonus}
+                  onChange={(v) => setCap({ fasce: cap.fasce.map((x, j) => (j === i ? { ...x, bonus: v } : x)) })}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </fieldset>
+
+      <fieldset>
         <legend>Moduli ammessi</legend>
         <div className="moduli">
           {TUTTI_I_MODULI.map((m) => (
@@ -522,9 +562,20 @@ function Formazione({ rosa, giornata, ctx }: { rosa: Giocatore[]; giornata: numb
       <p className="nota-piccola">
         Punti attesi {due(f.atteso)}
         {ctx.regole.modificatoreDifesa.attivo && `, di cui modificatore difesa ${due(f.modificatore)}`}
+        {f.capitano && ` e modificatore capitano ${due(f.capitano.atteso)}`}
         {moduloValido && automatica && automatica.atteso > f.atteso && ` (${due(automatica.atteso - f.atteso)} in meno del ${automatica.modulo})`}
         . Contano anche i cambi dalla panchina se un titolare non gioca.
       </p>
+      {f.capitano && (
+        <p className="capitano-consigliato">
+          <span className="fascia-capitano">C</span> Capitano: <strong>{f.capitano.capitano.nome}</strong>{" "}
+          <span className="fascia-capitano vice">VC</span> vice: <strong>{f.capitano.vice.nome}</strong>
+          <span className="nota-piccola">
+            {" "}
+            · voto atteso {voto(componenti(f.capitano.capitano, ctx.orizzonte).voto)}, gioca {pct(pGioca(f.capitano.capitano, ctx.orizzonte))}
+          </span>
+        </p>
+      )}
       <Campo formazione={f} ctx={ctx} />
       <h3 className="etichetta">Panchina, in ordine di ingresso</h3>
       <ul className="panchina">

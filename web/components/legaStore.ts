@@ -13,7 +13,7 @@ import { RUOLI, type Giocatore, type Ruolo } from "@/lib/types";
 
 const CHIAVE = "chi-schiero-lega-v2";
 /** Versione della lettura delle impostazioni di Leghe Fantacalcio: se cambia, le regole importate si ricalcolano. */
-const VERSIONE_LETTURA = 2;
+const VERSIONE_LETTURA = 3;
 const COMPOSIZIONE: Record<Ruolo, number> = { P: 3, D: 8, C: 8, A: 6 };
 
 export interface LegaSalvata {

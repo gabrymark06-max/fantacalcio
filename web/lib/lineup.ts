@@ -1,4 +1,4 @@
-import { fantavotoRegole, modificatoreAtteso, pGioca, REGOLE_STANDARD, type Orizzonte, type Regole } from "./rules.ts";
+import { fantavotoRegole, modificatoreAtteso, pGioca, REGOLE_STANDARD, sceltaCapitano, type Orizzonte, type Regole, type SceltaCapitano } from "./rules.ts";
 import type { Giocatore, Ruolo } from "./types.ts";
 
 /** Difensori, centrocampisti, attaccanti per ogni modulo Classic. */
@@ -43,9 +43,11 @@ export interface Formazione {
   titolari: Giocatore[];
   /** Panchina in ordine di sostituzione: per reparto, dal punteggio più alto. */
   panchina: Giocatore[];
-  /** Punti attesi dei titolari (con le sostituzioni) più il modificatore difesa atteso. */
+  /** Punti attesi dei titolari (con le sostituzioni) più i modificatori attesi (difesa, capitano). */
   atteso: number;
   modificatore: number;
+  /** Capitano e vice consigliati, se la lega ha il modificatore capitano. */
+  capitano: SceltaCapitano | null;
 }
 
 function perRuolo(rosa: Giocatore[], ctx: Contesto): Record<Ruolo, Giocatore[]> {
@@ -66,7 +68,8 @@ export function formazioneConModulo(rosa: Giocatore[], modulo: string, ctx: Cont
   const panchina = (["P", "D", "C", "A"] as Ruolo[]).flatMap((r) => ord[r].slice(servono[r]));
   const base = titolari.reduce((s, g) => s + punteggio(g, ctx), 0);
   const modificatore = modificatoreAtteso(titolari, panchina, ctx.regole, ctx.orizzonte, ctx.sdVoto);
-  return { modulo, titolari, panchina, atteso: base + modificatore, modificatore };
+  const capitano = sceltaCapitano(titolari, ctx.regole, ctx.orizzonte, ctx.sdVoto);
+  return { modulo, titolari, panchina, atteso: base + modificatore + (capitano?.atteso ?? 0), modificatore, capitano };
 }
 
 /**

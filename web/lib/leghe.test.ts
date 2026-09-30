@@ -119,7 +119,15 @@ test("impostazioni reali di una lega Classic: valori per ruolo, modificatore dif
   const testi = note.map((n) => n.testo).join(" | ");
   assert.match(testi, /Bonus gol per ruolo: P \+5, D \+3, C \+3, A \+3/);
   assert.match(testi, /gol decisivo \+1, gol del pareggio \+0,5/);
-  assert.match(testi, /modificatore capitano/);
+  assert.match(testi, /Modificatore capitano attivo: sotto 5,7 -0,5, da 5,7 0, da 6,3 \+0,5 secondo il voto del capitano/);
+  assert.deepEqual(regole.capitano, {
+    attivo: true,
+    fasce: [
+      { da: 0, bonus: -0.5 },
+      { da: 5.7, bonus: 0 },
+      { da: 6.3, bonus: 0.5 },
+    ],
+  });
   assert.doesNotMatch(testi, /formato che non conosciamo/);
 });
 

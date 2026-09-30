@@ -22,8 +22,8 @@ import type { Giocatore, Ruolo } from "./types.ts";
  *     Con smodld 6, smodlu 7 e 6 valori le soglie sono 6; 6,25; 6,5; 6,75; 7;
  *   - custom-roles: ruoli cambiati dalla lega, 1..4 = P, D, C, A;
  *   - settings/lineup → mods: moduli ammessi ("343", "352", ...).
- * Non modellati (segnalati all'utente): gol decisivo e del pareggio, modificatore capitano e
- * gli altri modificatori (smodg, smodm, smodf, ...).
+ * Non modellati (segnalati all'utente): gol decisivo e del pareggio e gli altri modificatori
+ * (smodg, smodm, smodf, ...).
  */
 
 export interface SquadraLeghe {
@@ -145,11 +145,11 @@ export function fasceDaSmodd(smodd: Record<string, unknown>): Fascia[] | null {
   const passo = (a - da) / (nums.length - 2);
   const fasce: Fascia[] = nums.slice(1).map((bonus, i) => ({ da: Math.round((da + i * passo) * 100) / 100, bonus }));
   if (nums[0] !== 0) fasce.unshift({ da: 0, bonus: nums[0] });
-  return fasce;
+  // fasce consecutive con lo stesso bonus sono una sola (stesso risultato, tabella più leggibile)
+  return fasce.filter((f, i) => i === 0 || f.bonus !== fasce[i - 1].bonus);
 }
 
 const MODIFICATORI_NON_GESTITI: Record<string, string> = {
-  smodcp: "modificatore capitano",
   smodg: "modificatore portiere",
   smodm: "modificatore centrocampo",
   smodf: "modificatore attacco",
@@ -236,7 +236,21 @@ export function regoleDaLeghe(imp: DatiLeghe["impostazioni"], base: Regole = REG
     }
   }
 
-  const altri = campiModificatori(calcolo).filter((k) => k !== "smodd" && k !== "stbdf");
+  const smodcp = calcolo?.smodcp as Record<string, unknown> | null | undefined;
+  if (smodcp) {
+    const fasce = fasceDaSmodd(smodcp);
+    if (fasce) {
+      regole.capitano = { attivo: true, fasce };
+      note.push({
+        tipo: "ok",
+        testo: `Modificatore capitano attivo: ${fasce.map((f) => (f.da === 0 ? `sotto ${fmt(fasce[1]?.da ?? 0)} ${conSegno(f.bonus)}` : `da ${fmt(f.da)} ${conSegno(f.bonus)}`)).join(", ")} secondo il voto del capitano (del vice se non gioca).`,
+      });
+    } else {
+      note.push({ tipo: "controlla", testo: "Il modificatore capitano è attivo ma le sue fasce non si leggono: impostale qui sotto." });
+    }
+  }
+
+  const altri = campiModificatori(calcolo).filter((k) => k !== "smodd" && k !== "smodcp" && k !== "stbdf");
   if (altri.length) {
     note.push({
       tipo: "info",

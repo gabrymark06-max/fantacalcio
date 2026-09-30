@@ -2,8 +2,9 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { importaRose } from "./league.ts";
-import { CONTESTO_STANDARD, migliorFormazione, punteggioAtteso, type Contesto } from "./lineup.ts";
-import { almenoK, fantavotoRegole, modificatoreAtteso, REGOLE_STANDARD, type Regole } from "./rules.ts";
+import { CONTESTO_STANDARD, migliorFormazione, punteggioAtteso, SD_VOTO_DEFAULT, type Contesto } from "./lineup.ts";
+import { almenoK, fantavotoRegole, modificatoreAtteso, PESO_PROSSIME, REGOLE_STANDARD, sceltaCapitano, type Regole } from "./rules.ts";
+import { liberi, suggerisciSvincolati } from "./svincolati.ts";
 import { probabilitaAccetta, suggerisciScambi, valutaScambio } from "./trades.ts";
 import type { Componenti, Giocatore, Ruolo } from "./types.ts";
 
@@ -159,4 +160,46 @@ test("import rose: id Leghe Fantacalcio e nomi, con separatori e non trovati", (
     { nome: "Squadra B", ids: [dimarco.id] },
   ]);
   assert.deepEqual(esito.nonTrovati, [{ squadra: "Squadra B", valore: "Sconosciuto" }]);
+});
+
+test("capitano: il titolare con il voto atteso più alto e sicuro di giocare; vice chi è sicuro di giocare", () => {
+  const regole: Regole = { ...REGOLE_STANDARD, capitano: { attivo: true, fasce: [{ da: 0, bonus: -0.5 }, { da: 6, bonus: 0 }, { da: 6.5, bonus: 0.5 }] } };
+  const campione = g("A", 8, { c: { voto: 7 } });
+  const incerto = g("A", 8, { p: 0.3, c: { voto: 6.9 } });
+  const buono = g("C", 7, { c: { voto: 6.6 } });
+  const scarso = g("D", 6, { c: { voto: 5.8 } });
+  const scelta = sceltaCapitano([scarso, buono, incerto, campione], regole, "giornata", SD_VOTO_DEFAULT)!;
+  assert.equal(scelta.capitano, campione);
+  // vice: chi è sicuro di giocare, non l'incerto
+  assert.equal(scelta.vice, buono);
+  // con un voto atteso più alto conviene capitanare anche chi è incerto: se non gioca, c'è il vice
+  const fuoriclasse = g("A", 9, { p: 0.6, c: { voto: 7.6 } });
+  assert.equal(sceltaCapitano([campione, buono, fuoriclasse], regole, "giornata", SD_VOTO_DEFAULT)!.capitano, fuoriclasse);
+  assert.ok(scelta.atteso > 0.3 && scelta.atteso < 0.5);
+  // senza modificatore capitano nessuna scelta, e la formazione non cambia valore
+  assert.equal(sceltaCapitano([campione, buono], REGOLE_STANDARD, "giornata", SD_VOTO_DEFAULT), null);
+  const r = ROSA_PIATTA();
+  const con = migliorFormazione(r, { ...CONTESTO_STANDARD, regole })!;
+  assert.ok(con.capitano && Math.abs(con.atteso - migliorFormazione(r)!.atteso - con.capitano.atteso) < 1e-9);
+});
+
+test("svincolati: propone il libero migliore al posto del peggiore dello stesso ruolo", () => {
+  const mia = ROSA_PIATTA();
+  const forte = g("A", 8.5);
+  const debole = g("A", 5.5);
+  const portiere = g("P", 5.2);
+  const proposte = suggerisciSvincolati(mia, [forte, debole, portiere], CONTESTO_STANDARD);
+  assert.equal(proposte[0].prendi, forte);
+  assert.equal(proposte[0].taglia.ruolo, "A");
+  assert.ok(proposte[0].guadagno > 1);
+  assert.ok(!proposte.some((s) => s.prendi === debole));
+  assert.deepEqual(liberi([forte, debole, mia[0]], [mia]), [forte, debole]);
+});
+
+test("negli scambi conta anche il calendario delle prossime giornate", () => {
+  const facile = g("A", 7, { c: { fv_std: 7 } });
+  facile.prossime = { ...facile.stagione, fv_std: 8 };
+  assert.ok(Math.abs(fantavotoRegole(facile, REGOLE_STANDARD, "stagione") - (7 + PESO_PROSSIME)) < 1e-9);
+  // la prossima giornata resta quella prevista
+  assert.equal(fantavotoRegole(facile, REGOLE_STANDARD, "giornata"), 7);
 });

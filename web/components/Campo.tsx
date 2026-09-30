@@ -61,12 +61,19 @@ export function CreditiFoto({ giocatori }: { giocatori: Giocatore[] }) {
   );
 }
 
-function Pedina({ g, ctx }: { g: Giocatore; ctx: Contesto }) {
+function Pedina({ g, ctx, fascia }: { g: Giocatore; ctx: Contesto; fascia?: "C" | "VC" }) {
   const s = stato(g);
   const fv = fantavotoRegole(g, ctx.regole, ctx.orizzonte);
   return (
     <li className="pedina" title={`${g.nome} (${NOMI_RUOLO[g.ruolo]}), ${g.casa ? "in casa contro" : "in trasferta contro"} ${g.avversario}`}>
-      <Faccia g={g} grande />
+      <span className="gettone-foto">
+        <Faccia g={g} grande />
+        {fascia && (
+          <span className={`fascia-capitano${fascia === "VC" ? " vice" : ""}`} title={fascia === "C" ? "Capitano consigliato" : "Vice capitano consigliato"}>
+            {fascia}
+          </span>
+        )}
+      </span>
       <span className="pedina-nome">{g.nome}</span>
       <span className="pedina-dati">
         <span className="pedina-fv">{voto(fv)}</span>
@@ -101,7 +108,12 @@ export function Campo({ formazione, ctx }: { formazione: Formazione; ctx: Contes
           {formazione.titolari
             .filter((g) => g.ruolo === r)
             .map((g) => (
-              <Pedina key={g.id} g={g} ctx={ctx} />
+              <Pedina
+                key={g.id}
+                g={g}
+                ctx={ctx}
+                fascia={formazione.capitano?.capitano === g ? "C" : formazione.capitano?.vice === g ? "VC" : undefined}
+              />
             ))}
         </ol>
       ))}

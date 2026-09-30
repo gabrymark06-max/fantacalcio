@@ -65,6 +65,20 @@ a partire dalla giornata 6 del 2026/27).
   stagione; accettazione stimata da equità sul valore di mercato FVM (convesso, come KeepTradeCut) e
   dal cambiamento della loro formazione. Solo scambi con guadagno ≥ 0,15 a giornata e accettazione ≥ 0,45.
 
+## Capitano, chi schiero, svincolati
+
+- **Capitano**: se la lega ha il modificatore capitano (letto da Leghe Fantacalcio o impostato
+  nelle regole) la formazione indica capitano (C) e vice (VC): il valore atteso del bonus a
+  fasce sul voto puro previsto, del vice se il capitano non gioca. Entra nei punti attesi.
+- **Chi schiero?**: confronto di due o tre giocatori della rosa (probabilità di giocare,
+  fantavoto con le regole della lega, voto puro, gol/assist o porta inviolata, cartellini);
+  parte dal dubbio più stretto della formazione.
+- **Svincolati**: i giocatori del listone in nessuna rosa della lega, con chi tagliare dello
+  stesso ruolo e il guadagno della formazione da qui a fine stagione (stesso metro degli scambi).
+- **Calendario** (solo negli scambi e negli svincolati, non mostrato): le prossime 5 giornate
+  contro gli avversari veri pesano il 40% del valore stagionale (`PESO_PROSSIME` in
+  `web/lib/rules.ts`); le partite si leggono da `/serie-a/calendario/N`.
+
 ## Foto dei giocatori
 
 `uv run python -m fanta_ai.scraping.anagrafica` e poi `uv run python -m fanta_ai.scraping.foto`

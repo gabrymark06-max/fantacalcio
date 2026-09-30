@@ -2048,3 +2048,217 @@ button.carta-scambio[aria-pressed="true"] {
     align-items: center;
   }
 }
+
+/* ---------- Capitano, chi schiero, svincolati ---------- */
+
+.fascia-capitano {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding: 0 0.2rem;
+  border-radius: 50%;
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  font-size: 0.7rem;
+  line-height: 1;
+  color: var(--su-giallo);
+  background: var(--evidenziatore);
+  box-shadow: 0 0 0 2px var(--carta-2), 0 1px 3px rgba(0, 0, 0, 0.4);
+  vertical-align: middle;
+}
+
+.fascia-capitano.vice {
+  min-width: 1.6rem;
+  border-radius: 0.7rem;
+  color: var(--inchiostro);
+  background: var(--carta-2);
+  box-shadow: 0 0 0 2px var(--evidenziatore), 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.pedina .gettone-foto .fascia-capitano {
+  position: absolute;
+  top: -0.35rem;
+  right: -0.45rem;
+}
+
+.capitano-consigliato {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0.25rem 0 0;
+}
+
+.scelte-confronto {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  margin: 0.75rem 0;
+}
+
+.scelte-confronto label {
+  flex: 1 1 12rem;
+}
+
+.verdetto {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.verdetto mark {
+  padding: 0 0.2em;
+  color: var(--su-giallo);
+  background: var(--evidenziatore);
+  border-radius: 0.2em 0.6em 0.3em 0.5em;
+}
+
+.carte-confronto {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.9rem;
+}
+
+.carta-confronto {
+  border: 1px solid var(--riga);
+  border-radius: 0.8rem;
+  padding: 0.9rem;
+  background: var(--carta);
+}
+
+.carta-confronto.migliore {
+  border-color: var(--evidenziatore);
+  box-shadow: 0 0 0 2px var(--evidenziatore);
+}
+
+.carta-confronto-testa {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.carta-confronto-testa > div {
+  display: grid;
+  min-width: 0;
+}
+
+.punti-attesi {
+  margin: 0.6rem 0;
+  color: var(--inchiostro-2);
+}
+
+.numero-grande {
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--inchiostro);
+}
+
+.carta-confronto dl {
+  margin: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.carta-confronto dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-bottom: 0.2rem;
+  border-bottom: 1px dashed var(--riga);
+  font-size: 0.875rem;
+}
+
+.carta-confronto dt {
+  color: var(--inchiostro-2);
+}
+
+.carta-confronto dd {
+  margin: 0;
+  font-family: var(--font-dati);
+}
+
+.svincoli {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.svincoli li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--riga);
+  border-radius: 0.7rem;
+  background: var(--carta);
+}
+
+.svincolo-lato {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  column-gap: 0.6rem;
+  align-items: center;
+  min-width: 0;
+}
+
+.svincolo-lato .faccia {
+  grid-row: span 2;
+}
+
+.svincolo-lato > span:last-child {
+  display: grid;
+  min-width: 0;
+}
+
+.svincolo-etichetta {
+  grid-column: 2;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--inchiostro-2);
+}
+
+.svincolo-lato .ruolo {
+  width: 1.1rem;
+  height: 1.1rem;
+  font-size: 0.65rem;
+  vertical-align: middle;
+}
+
+.svincolo-freccia {
+  font-size: 1.3rem;
+  color: var(--inchiostro-2);
+}
+
+.svincolo-guadagno {
+  display: grid;
+  justify-items: end;
+  font-family: var(--font-titolo);
+  font-size: 1.3rem;
+}
+
+@media (max-width: 40rem) {
+  .svincoli li {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .svincolo-freccia {
+    display: none;
+  }
+  .svincoli li > .svincolo-lato:nth-of-type(3) {
+    grid-column: 1;
+  }
+  .svincolo-guadagno {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+}

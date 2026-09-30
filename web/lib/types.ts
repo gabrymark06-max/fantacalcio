@@ -51,6 +51,8 @@ export interface Giocatore {
   giornata: Componenti;
   /** Voci del fantavoto contro l'avversario medio: valore da qui a fine stagione. */
   stagione: Componenti;
+  /** Voci del fantavoto in media sulle prossime giornate, contro gli avversari veri (per gli scambi). */
+  prossime?: Componenti | null;
 }
 
 export interface Partita {

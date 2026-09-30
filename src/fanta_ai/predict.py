@@ -149,6 +149,25 @@ def features_for(base: pd.DataFrame, rows: pd.DataFrame) -> pd.DataFrame:
     return full[full["_futura"].astype(bool)].copy()
 
 
+def prossime_components(base, models, listone: pd.DataFrame, ratings: pd.DataFrame, home_adv: float, league_avg: float) -> dict:
+    """Voci attese del fantavoto in media sulle prossime giornate, contro gli avversari veri
+    (data/raw/calendario_prossime.json). Servono solo agli scambi: chi ha un calendario facile
+    vale un po' di più nel breve periodo. Vuoto se il calendario non è disponibile."""
+    path = DATA_DIR / "raw" / "calendario_prossime.json"
+    if not path.exists():
+        return {}
+    partite = json.loads(path.read_text(encoding="utf-8"))
+    per_giornata = []
+    for g in sorted({m["giornata"] for m in partite}):
+        context = match_context([m for m in partite if m["giornata"] == g], ratings, pd.DataFrame(), home_adv, league_avg)
+        rows = features_for(base, future_rows(listone, context, g))
+        comp = predict_components(models, rows)
+        comp.index = rows["id"].to_numpy()
+        per_giornata.append(comp[COMPONENTI_ESPORTATE])
+    media = pd.concat(per_giornata).groupby(level=0).mean().round(4)
+    return dict(zip(media.index, media.to_dict("records")))
+
+
 def sos_start_probabilities(titolarita: list[dict], listone: pd.DataFrame) -> tuple[dict[int, int], set[str], int]:
     """id -> % titolarità SOS Fanta; squadre coperte; nomi non collegati."""
     pct: dict[int, int] = {}
@@ -196,7 +215,8 @@ def main() -> None:
     except Exception as exc:  # le quote sono un di più: senza, si usa la stima
         print(f"Quote non disponibili ({exc}), uso la stima dalla forza delle squadre.")
         odds = pd.DataFrame()
-    context = match_context(partite, ratings, odds, home_advantage(base), league_average(base))
+    home_adv, league_avg = home_advantage(base), league_average(base)
+    context = match_context(partite, ratings, odds, home_adv, league_avg)
     rows = features_for(base, future_rows(listone, context, giornata))
     comp = predict_components(models, rows)
     rows["p_gioca_modello"] = comp["p_gioca"]
@@ -216,6 +236,7 @@ def main() -> None:
     rows["p_gioca_stagione"] = rows["id"].map(season_comp["p_gioca"])
     season_records = dict(zip(season_comp.index, season_comp[COMPONENTI_ESPORTATE].round(4).to_dict("records")))
     rows["comp_stagione"] = rows["id"].map(season_records)
+    rows["comp_prossime"] = rows["id"].map(prossime_components(base, models, listone, ratings, home_adv, league_avg))
     current = base[(base["stagione"] == CURRENT_SEASON) & base["giocato"]]
     rows["presenze"] = rows["id"].map(current.groupby("id").size()).fillna(0).astype(int)
 
@@ -241,6 +262,7 @@ def export(rows: pd.DataFrame, context: pd.DataFrame, giornata: int, n_sos: int,
             "fantamedia": _round(r.stag_fantamedia, 2), "media_voto": _round(r.stag_media_voto, 2),
             "presenze": int(r.presenze),
             "giornata": r.comp_giornata, "stagione": r.comp_stagione,
+            "prossime": r.comp_prossime if isinstance(r.comp_prossime, dict) else None,
         }
         for r in rows.itertuples()
     ]
@@ -263,7 +285,7 @@ def export(rows: pd.DataFrame, context: pd.DataFrame, giornata: int, n_sos: int,
 
     archive = DATA_DIR / "predictions" / f"{CURRENT_SEASON}_g{giornata:02d}.csv"
     archive.parent.mkdir(parents=True, exist_ok=True)
-    pd.DataFrame(giocatori).drop(columns=["giornata", "stagione"]).to_csv(archive, index=False)
+    pd.DataFrame(giocatori).drop(columns=["giornata", "stagione", "prossime"]).to_csv(archive, index=False)
     print(f"Giornata {giornata}: {len(giocatori)} giocatori, {n_sos} con titolarità SOS "
           f"({non_trovati} nomi non collegati). Esportato in {WEB_DATA}")
 

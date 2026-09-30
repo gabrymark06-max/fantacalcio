@@ -28,6 +28,14 @@ export interface Regole {
     conPortiere: boolean;
     fasce: Fascia[];
   };
+  /**
+   * Modificatore capitano: bonus o malus secondo il voto puro del capitano (del vice se il
+   * capitano non gioca). Assente nelle regole salvate prima che esistesse.
+   */
+  capitano?: {
+    attivo: boolean;
+    fasce: Fascia[];
+  };
   /** Moduli che la lega permette di schierare. */
   moduli: string[];
 }
@@ -58,16 +66,44 @@ export const REGOLE_STANDARD: Regole = {
       { da: 7, bonus: 6 },
     ],
   },
+  capitano: {
+    attivo: false,
+    // tabella di Leghe Fantacalcio: voto sotto il 6 → −0,5, da 6 → 0, da 6,5 → +0,5
+    fasce: [
+      { da: 0, bonus: -0.5 },
+      { da: 6, bonus: 0 },
+      { da: 6.5, bonus: 0.5 },
+    ],
+  },
   moduli: TUTTI_I_MODULI,
 };
 
 /** Valori dello standard con cui è stato allenato fv_std: servono a calcolare le differenze. */
 const STD = REGOLE_STANDARD;
 
+/** giornata: la prossima partita; stagione: da qui a fine stagione (scambi e svincolati). */
 export type Orizzonte = "giornata" | "stagione";
 
+/**
+ * Peso delle prossime giornate (avversari veri) nel valore stagionale. Più della loro quota
+ * aritmetica (5 su ~33): sono le più certe, e rose e forma cambiano nel corso della stagione.
+ */
+export const PESO_PROSSIME = 0.4;
+
+const misti = new WeakMap<Giocatore, Componenti>();
+
 export function componenti(g: Giocatore, orizzonte: Orizzonte): Componenti {
-  return orizzonte === "giornata" ? g.giornata : g.stagione;
+  if (orizzonte === "giornata") return g.giornata;
+  if (!g.prossime) return g.stagione;
+  let c = misti.get(g);
+  if (!c) {
+    const p = g.prossime;
+    c = Object.fromEntries(
+      (Object.keys(g.stagione) as (keyof Componenti)[]).map((k) => [k, PESO_PROSSIME * (p[k] ?? g.stagione[k]) + (1 - PESO_PROSSIME) * g.stagione[k]]),
+    ) as unknown as Componenti;
+    misti.set(g, c);
+  }
+  return c;
 }
 
 /**
@@ -155,14 +191,62 @@ export function modificatoreAtteso(
   const mediaTot = (mediaDif * m + (nPor ? componenti(portiere!, orizzonte).voto : 0)) / (m + nPor);
   const sd = Math.sqrt(m * sdVoto.D ** 2 + nPor * sdVoto.P ** 2) / (m + nPor);
 
-  const fasce = [...md.fasce].sort((a, b) => a.da - b.da);
+  return pApplica * attesoFasce(mediaTot, sd, md.fasce);
+}
+
+/** Valore atteso di una tabella a fasce per un voto (o una media) normale di media e deviazione date. */
+export function attesoFasce(media: number, sd: number, fasceLega: Fascia[]): number {
+  const fasce = [...fasceLega].sort((a, b) => a.da - b.da);
   let atteso = 0;
   fasce.forEach((f, i) => {
-    const pSopra = 1 - cdfNormale((f.da - mediaTot) / sd);
-    const pSopraProssima = i + 1 < fasce.length ? 1 - cdfNormale((fasce[i + 1].da - mediaTot) / sd) : 0;
+    const pSopra = 1 - cdfNormale((f.da - media) / sd);
+    const pSopraProssima = i + 1 < fasce.length ? 1 - cdfNormale((fasce[i + 1].da - media) / sd) : 0;
     atteso += f.bonus * (pSopra - pSopraProssima);
   });
-  return pApplica * atteso;
+  return atteso;
+}
+
+// ---------- Modificatore capitano ----------
+
+/** Bonus atteso se `g` è il capitano e gioca: dipende dal suo voto puro. */
+export function bonusCapitano(g: Giocatore, r: Regole, orizzonte: Orizzonte, sdVoto: Record<Ruolo, number>): number {
+  const cap = r.capitano;
+  if (!cap?.attivo) return 0;
+  return attesoFasce(componenti(g, orizzonte).voto, sdVoto[g.ruolo], cap.fasce);
+}
+
+export interface SceltaCapitano {
+  capitano: Giocatore;
+  vice: Giocatore;
+  /** Modificatore atteso: del capitano se gioca, altrimenti del vice. */
+  atteso: number;
+}
+
+/**
+ * Capitano e vice che massimizzano il modificatore atteso tra i titolari:
+ * p(capitano) × bonus(capitano) + (1 − p(capitano)) × p(vice) × bonus(vice).
+ */
+export function sceltaCapitano(
+  titolari: Giocatore[],
+  r: Regole,
+  orizzonte: Orizzonte,
+  sdVoto: Record<Ruolo, number>,
+): SceltaCapitano | null {
+  if (!r.capitano?.attivo || titolari.length < 2) return null;
+  const voci = titolari.map((g) => {
+    const p = pGioca(g, orizzonte);
+    return { g, p, bonus: bonusCapitano(g, r, orizzonte, sdVoto) };
+  });
+  // il vice conta solo se il capitano non gioca: è chi ha il bonus atteso più alto tra gli altri
+  const viceDi = (c: (typeof voci)[number]) =>
+    voci.filter((v) => v !== c).reduce((a, b) => (b.p * b.bonus > a.p * a.bonus ? b : a));
+  let migliore: SceltaCapitano | null = null;
+  for (const c of voci) {
+    const v = viceDi(c);
+    const atteso = c.p * c.bonus + (1 - c.p) * v.p * v.bonus;
+    if (!migliore || atteso > migliore.atteso) migliore = { capitano: c.g, vice: v.g, atteso };
+  }
+  return migliore;
 }
 
 export function pGioca(g: Giocatore, orizzonte: Orizzonte): number {
