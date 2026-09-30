@@ -6,6 +6,7 @@ import { stato } from "@/components/Listone";
 import { conSegno, due, pct, voto } from "@/lib/format";
 import { importaRose, rosaDi, type Squadra } from "@/lib/league";
 import { migliorFormazione, punteggio, type Contesto } from "@/lib/lineup";
+import { formattaNumero, leggiNumero } from "@/lib/numbers";
 import { fantavotoRegole, REGOLE_STANDARD, TUTTI_I_MODULI, type Regole } from "@/lib/rules";
 import { contestoStagione, etichettaAccetta, suggerisciScambi, valutaScambio, type Scambio } from "@/lib/trades";
 import { NOMI_RUOLO, RUOLI, type Giocatore, type Ruolo } from "@/lib/types";
@@ -209,24 +210,54 @@ const CAMPI: { chiave: CampoNumerico; etichetta: string }[] = [
   { chiave: "espulsione", etichetta: "Espulsione" },
 ];
 
-function Numero({ valore, onChange, etichetta }: { valore: number; onChange: (v: number) => void; etichetta: string }) {
+function Numero({
+  valore,
+  onChange,
+  etichetta,
+  passo = 0.5,
+}: {
+  valore: number;
+  onChange: (v: number) => void;
+  etichetta: string;
+  /** Incremento delle frecce; si può comunque scrivere qualsiasi decimale (6,25 o 6.25). */
+  passo?: number;
+}) {
+  // Testo libero: mentre si scrive "6," o "-" il valore non è ancora un numero e non va perso.
+  const [bozza, setBozza] = useState(formattaNumero(valore));
+  const [attivo, setAttivo] = useState(false);
+  const mostrato = attivo ? bozza : formattaNumero(valore);
+  const applica = (v: number) => {
+    const arrotondato = Math.round(v * 100) / 100;
+    setBozza(formattaNumero(arrotondato));
+    onChange(arrotondato);
+  };
   return (
     <label className="numero-regola">
       <span>{etichetta}</span>
       <input
-        type="number"
-        step="0.5"
+        type="text"
         inputMode="decimal"
-        value={valore}
+        value={mostrato}
+        onFocus={() => {
+          setBozza(formattaNumero(valore));
+          setAttivo(true);
+        }}
+        onBlur={() => setAttivo(false)}
         onChange={(e) => {
-          const v = Number(e.target.value.replace(",", "."));
-          if (!Number.isNaN(v)) onChange(v);
+          setBozza(e.target.value);
+          const v = leggiNumero(e.target.value);
+          if (v !== null) onChange(v);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+            e.preventDefault();
+            applica(valore + (e.key === "ArrowUp" ? passo : -passo));
+          }
         }}
       />
     </label>
   );
 }
-
 function riassunto(r: Regole): string {
   const parti = [];
   if (JSON.stringify(r) === JSON.stringify(REGOLE_STANDARD)) return "standard fantacalcio.it";
@@ -302,7 +333,8 @@ function RegoleLega({ regole, onChange }: { regole: Regole; onChange: (r: Regole
               {md.fasce.map((f, i) => (
                 <div key={i} className="fascia">
                   <Numero
-                    etichetta={`Da media`}
+                    etichetta="Da media"
+                    passo={0.25}
                     valore={f.da}
                     onChange={(v) => setMd({ fasce: md.fasce.map((x, j) => (j === i ? { ...x, da: v } : x)) })}
                   />
@@ -315,7 +347,10 @@ function RegoleLega({ regole, onChange }: { regole: Regole; onChange: (r: Regole
               ))}
             </div>
             <div className="riga-azioni">
-              <button type="button" className="secondario" onClick={() => setMd({ fasce: [...md.fasce, { da: 7.5, bonus: 8 }] })}>
+              <button type="button" className="secondario" onClick={() => {
+                  const ultima = md.fasce.reduce((a, b) => (b.da > a.da ? b : a), { da: 5.75, bonus: 0 });
+                  setMd({ fasce: [...md.fasce, { da: ultima.da + 0.25, bonus: ultima.bonus + 1 }] });
+                }}>
                 Aggiungi fascia
               </button>
               {md.fasce.length > 1 && (

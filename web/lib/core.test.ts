@@ -81,6 +81,21 @@ test("modificatore difesa: solo con 4 difensori, e più alto con difensori da vo
   assert.equal(modificatoreAtteso([por, ...buoni.slice(0, 3)], [], regole, "giornata", sd), 0);
 });
 
+test("modificatore difesa con fasce intermedie (6,25 / 6,75)", () => {
+  const sd = { P: 0.55, D: 0.57, C: 0.56, A: 0.68 };
+  const por = g("P", 5, { c: { voto: 6.3 } });
+  const dif = [0, 1, 2, 3].map(() => g("D", 6.2, { c: { voto: 6.3 } }));
+  const conFasce = (fasce: { da: number; bonus: number }[]) =>
+    modificatoreAtteso([por, ...dif], [], { ...REGOLE_STANDARD, modificatoreDifesa: { ...REGOLE_STANDARD.modificatoreDifesa, attivo: true, fasce } }, "giornata", sd);
+  const classica = conFasce([{ da: 6, bonus: 1 }, { da: 6.5, bonus: 3 }, { da: 7, bonus: 6 }]);
+  const fine = conFasce([{ da: 6, bonus: 1 }, { da: 6.25, bonus: 2 }, { da: 6.5, bonus: 3 }, { da: 6.75, bonus: 4 }, { da: 7, bonus: 6 }]);
+  // con una fascia in più a 6,25 una difesa da ~6,3-6,5 di media prende di più
+  assert.ok(fine > classica);
+  // l'ordine in cui si inseriscono le fasce non conta
+  const disordinata = conFasce([{ da: 7, bonus: 6 }, { da: 6.25, bonus: 2 }, { da: 6, bonus: 1 }, { da: 6.75, bonus: 4 }, { da: 6.5, bonus: 3 }]);
+  assert.ok(Math.abs(disordinata - fine) < 1e-12);
+});
+
 test("col modificatore attivo la difesa a 4 diventa più conveniente", () => {
   const r = rosa({ P: [5, 5, 5], D: [6, 6, 6, 6, 6, 6, 6, 6], C: [6.2, 6.2, 6.2, 6.2, 6.2, 6.2, 6, 6], A: [6.2, 6.2, 6.2, 6, 6, 6] });
   r.filter((x) => x.ruolo !== "A" && x.ruolo !== "C").forEach((x) => (x.giornata.voto = 6.6));
