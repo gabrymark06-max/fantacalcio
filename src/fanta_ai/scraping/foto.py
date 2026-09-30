@@ -261,13 +261,14 @@ def posizione_viso(c: Client, rilevatore, url: str, larghezza_originale: int | N
     return _risultato(img, viso, url)
 
 
-def _risultato(img, viso, url: str) -> dict | None:
+def _risultato(img, viso, url: str, margine: float = 2.1) -> dict | None:
+    """margine: larghezza del cerchio in visi (2,1: il viso occupa circa metà del cerchio)."""
     if not viso or viso[2] < VISO_MINIMO * 0.8:
         return None
     x, y, fw, fh = viso
     h, w = img.shape[:2]
     ar = h / w
-    scala = max(1.0, 1 / ar, min(10.0, w / (fw * 2.1)))
+    scala = max(1.0, 1 / ar, min(10.0, w / (fw * margine)))
     return {
         "url": url,
         "cx": round((x + fw / 2) / w * 100, 1),

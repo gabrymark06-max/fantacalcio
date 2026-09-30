@@ -10,5 +10,5 @@ import type { Accuratezza, Giocatore, Giornata } from "./types.ts";
 export const giocatori = giocatoriJson as Giocatore[];
 export const giornata = giornataJson as Giornata;
 export const accuratezza = accuratezzaJson as Accuratezza;
-/** Le foto libere di Commons hanno la precedenza; Transfermarkt copre chi non ne ha. */
-export const foto = { ...(fotoPersonaliJson as Record<string, Foto>), ...(fotoJson as Record<string, Foto>) };
+/** Sul proprio PC le foto di Transfermarkt hanno la precedenza; Commons copre chi non c'è. */
+export const foto = { ...(fotoJson as Record<string, Foto>), ...(fotoPersonaliJson as Record<string, Foto>) };

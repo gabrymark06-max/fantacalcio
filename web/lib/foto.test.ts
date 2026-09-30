@@ -6,8 +6,13 @@ import { iniziali, ritaglio, type Foto } from "./foto.ts";
 const base: Foto = { url: "", cx: 50, cy: 50, scala: 1, ar: 1, viso: true, autore: "", licenza: "", pagina: "" };
 const pct = (s: string) => Number(s.replace("%", ""));
 
-test("viso al centro di una foto quadrata: nessuno spostamento", () => {
+test("foto quadrata grande quanto il cerchio: nessuno spostamento possibile", () => {
   assert.deepEqual(ritaglio(base), { width: "100%", left: "0%", top: "0%" });
+});
+
+test("ritratto verticale: viso poco sopra la metà del cerchio", () => {
+  // altezza 130%: centro del viso al 40% = 52% dall'alto → 44 - 52 = -8
+  assert.equal(pct(ritaglio({ ...base, cy: 40, ar: 1.3 }).top), -8);
 });
 
 test("viso piccolo in alto a sinistra: la foto si ingrandisce e il viso va al centro", () => {
@@ -15,8 +20,8 @@ test("viso piccolo in alto a sinistra: la foto si ingrandisce e il viso va al ce
   assert.equal(pct(r.width), 400);
   // centro del viso: 30% di 400% = 120% dal bordo sinistro dell'immagine → 50 - 120 = -70
   assert.equal(pct(r.left), -70);
-  // altezza 600%: 20% di 600% = 120% → 50 - 120 = -70
-  assert.equal(pct(r.top), -70);
+  // altezza 600%: 20% di 600% = 120% → 44 - 120 = -76
+  assert.equal(pct(r.top), -76);
 });
 
 test("il ritaglio non lascia mai vuoti ai bordi del cerchio", () => {

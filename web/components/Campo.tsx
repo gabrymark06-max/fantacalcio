@@ -36,8 +36,9 @@ export function CreditiFoto({ giocatori }: { giocatori: Giocatore[] }) {
   return (
     <details className="crediti-foto">
       <summary>
-        Foto: {conFoto.length} su {giocatori.length}, da Wikimedia Commons
-        {personali > 0 && <> e Transfermarkt ({personali}, solo su questo PC)</>}; chi non ha una foto è mostrato con le iniziali
+        Foto: {conFoto.length} su {giocatori.length}
+        {personali > 0 ? <>, da Transfermarkt ({personali}, solo su questo PC) e Wikimedia Commons</> : <>, da Wikimedia Commons</>}; chi
+        non ha una foto è mostrato con le iniziali
       </summary>
       <ul>
         {conFoto.map((g) => {

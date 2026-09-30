@@ -74,9 +74,9 @@ formazione) e il viso è ritagliato con il rilevatore YuNet di OpenCV. Chi non h
 licenza libera è mostrato con le iniziali. Prima di pubblicare, mettere un contatto vero in
 `USER_AGENT` (le regole di Wikimedia lo chiedono).
 
-Solo per uso personale: `uv run python -m fanta_ai.scraping.foto_tm` aggiunge le foto di
-Transfermarkt per chi non ne ha una su Commons (rose di Serie A, poi ricerca per nome ed età per
-chi è stato ceduto). Sono protette da diritto d'autore: finiscono in
+Solo per uso personale: `uv run python -m fanta_ai.scraping.foto_tm` scarica le foto di
+Transfermarkt per tutti i giocatori, che sul proprio PC sostituiscono quelle di Commons (rose di
+Serie A, poi ricerca per nome ed età per chi è stato ceduto). Sono protette da diritto d'autore: finiscono in
 `web/data/foto-personali.json`, escluso da git, quindi il sito pubblicato non le ha e mostra
 solo quelle di Commons.
 

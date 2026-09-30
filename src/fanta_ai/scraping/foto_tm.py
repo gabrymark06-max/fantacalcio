@@ -1,4 +1,4 @@
-"""Foto di riserva da Transfermarkt, per chi non ha una foto libera su Wikimedia Commons.
+"""Foto dei giocatori da Transfermarkt, per tutti: sul proprio PC sostituiscono quelle di Commons.
 
 ATTENZIONE: le foto di Transfermarkt sono protette da diritto d'autore. Vanno solo in
 web/data/foto-personali.json, che è escluso da git: il sito sul proprio PC le mostra, quello
@@ -49,6 +49,8 @@ FOTO_COMMONS = ROOT / "web" / "data" / "foto.json"
 CACHE_PAGINE = DATA_DIR / "cache" / "transfermarkt"
 SITO = "https://www.transfermarkt.it"
 STAGIONE = 2026  # 2026/27
+# Inquadratura più larga che per Commons: testa intera e un po' di spalle nel cerchio
+MARGINE = 3.2
 
 SQUADRE = {
     "ac-florenz": "Fiorentina", "ac-mailand": "Milan", "ac-monza": "Monza", "as-rom": "Roma",
@@ -151,8 +153,6 @@ def main() -> None:
     http = httpx.Client(headers={"User-Agent": USER_AGENT}, timeout=60, follow_redirects=True)
     foto, non_trovati, senza_foto = {}, [], []
     for r in listone.itertuples():
-        if str(r.id) in commons:
-            continue
         a = anagrafica.loc[r.id] if r.id in anagrafica.index else None
         nome_completo = None if a is None or pd.isna(a["nome_completo"]) else a["nome_completo"]
         nascita = None if a is None or pd.isna(a["nascita"]) else a["nascita"]
@@ -172,7 +172,7 @@ def main() -> None:
             file.write_bytes(risposta.content)
             time.sleep(0.5)
         img = cv2.imdecode(np.frombuffer(file.read_bytes(), np.uint8), cv2.IMREAD_COLOR)
-        pos = _risultato(img, _viso_piu_grande(rilevatore, img), g["img"]) if img is not None else None
+        pos = _risultato(img, _viso_piu_grande(rilevatore, img), g["img"], MARGINE) if img is not None else None
         if pos is None:
             senza_foto.append(r.nome)
             continue
@@ -180,8 +180,8 @@ def main() -> None:
                            "pagina": g["pagina"], "fonte": "transfermarkt", "tm": g["nome"]}
 
     OUT.write_text(json.dumps(foto, ensure_ascii=False, indent=0), encoding="utf-8")
-    mancanti = len(listone) - len(commons) - len(foto)
-    print(f"Foto da Transfermarkt: {len(foto)} (Commons: {len(commons)}, ancora senza: {mancanti})")
+    solo_commons = len(set(commons) - set(foto))
+    print(f"Foto da Transfermarkt: {len(foto)}/{len(listone)} (+{solo_commons} solo su Commons)")
     print(f"Non trovati su Transfermarkt ({len(non_trovati)}): {', '.join(non_trovati[:40])}")
     print(f"Trovati ma senza foto o viso ({len(senza_foto)}): {', '.join(senza_foto[:40])}")
 
