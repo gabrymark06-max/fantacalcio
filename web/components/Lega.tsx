@@ -14,6 +14,8 @@ import { contestoStagione, etichettaAccetta, suggerisciScambi, valutaScambio, ty
 import { NOMI_RUOLO, RUOLI, type Giocatore, type Ruolo } from "@/lib/types";
 
 const CHIAVE = "chi-schiero-lega-v2";
+/** Versione della lettura delle impostazioni di Leghe Fantacalcio: se cambia, le regole importate si ricalcolano. */
+const VERSIONE_LETTURA = 2;
 const COMPOSIZIONE: Record<Ruolo, number> = { P: 3, D: 8, C: 8, A: 6 };
 
 interface LegaSalvata {
@@ -29,6 +31,7 @@ interface LegaSalvata {
     note: Nota[];
     fuoriListone: number;
     impostazioni: unknown;
+    versione?: number;
   };
 }
 
@@ -57,6 +60,7 @@ function daSegnalibro(giocatori: Giocatore[], precedente: LegaSalvata | null): L
       note,
       fuoriListone: rose.fuoriListone,
       impostazioni: { calcolo: dati.impostazioni.calcolo, formazione: dati.impostazioni.formazione },
+      versione: VERSIONE_LETTURA,
     },
   };
 }
@@ -66,7 +70,16 @@ function leggi(): LegaSalvata | null {
     const raw = localStorage.getItem(CHIAVE);
     if (!raw) return null;
     const l = JSON.parse(raw) as LegaSalvata;
-    return { ...l, regole: { ...REGOLE_STANDARD, ...l.regole } };
+    const lega = { ...l, regole: { ...REGOLE_STANDARD, ...l.regole } };
+    if (lega.origine && lega.origine.versione !== VERSIONE_LETTURA) {
+      // importata con una lettura precedente delle impostazioni: si rilegge dagli originali salvati
+      const imp = lega.origine.impostazioni as { calcolo: Record<string, unknown> | null; formazione: Record<string, unknown> | null };
+      const { regole, note } = regoleDaLeghe({ calcolo: imp?.calcolo ?? null, formazione: imp?.formazione ?? null, ruoli: null });
+      lega.regole = regole;
+      lega.origine = { ...lega.origine, note, versione: VERSIONE_LETTURA };
+      salva(lega);
+    }
+    return lega;
   } catch {
     return null;
   }
@@ -411,7 +424,7 @@ function riassunto(r: Regole): string {
   if (r.modificatoreDifesa.attivo) parti.push("modificatore difesa");
   if (r.imbattibilita) parti.push(`imbattibilità ${conSegno(r.imbattibilita).replace(",00", "")}`);
   if (r.playerOfTheMatch) parti.push(`player of the match ${conSegno(r.playerOfTheMatch).replace(",00", "")}`);
-  if (r.gol.D !== 3 || r.gol.C !== 3) parti.push("gol diversi per ruolo");
+  if (new Set(Object.values(r.gol)).size > 1) parti.push("gol diversi per ruolo");
   if (r.moduli.length < TUTTI_I_MODULI.length) parti.push(`${r.moduli.length} moduli`);
   return parti.length ? parti.join(", ") : "personalizzate";
 }

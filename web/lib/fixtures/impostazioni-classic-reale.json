@@ -1,0 +1,42 @@
+{
+ "calcolo": {
+  "count": 4,
+  "sourcev": 1,
+  "bnMls": {
+   "bmcsh": 1,
+   "bmycsv": 0,
+   "bmgs": [5, 3, 3, 3],
+   "bmgc": [-1, -1, -1, -1],
+   "bmpsc": [3, 3, 3, 3],
+   "bmpns": [-3, -3, -3, -3],
+   "bmpsa": [3, 3, 3, 3],
+   "bmyc": [-0.5, -0.5, -0.5, -0.5],
+   "bmrc": [-1, -1, -1, -1],
+   "bmcg": [0, 0, 0, 0],
+   "bmasf": [1, 1, 1, 1],
+   "bmass": [1, 1, 1, 1],
+   "bmasg": [1, 1, 1, 1],
+   "bmog": [-2, -2, -2, -2],
+   "bmdg": [1, 1, 1, 1],
+   "bmeg": [0.5, 0.5, 0.5, 0.5],
+   "motm": [0, 0, 0, 0]
+  },
+  "step": { "stlmt": 66, "starni": 0, "stchkd": 0, "stog": 0, "stchkdl": false, "starnil": false, "stgoal": [6, 12, 18, 24, 30, 36, 42], "stf1": [25, 18, 12, 10, 8, 6, 4, 3, 2, 1] },
+  "subst": { "ssdfm": 4, "ssdfg": 2, "sstype": 3, "ssdfn": 1, "ssnum": 3, "ssdft": false },
+  "stbdf": { "sdpnt": 60, "sdgoal": 3 },
+  "smodg": null,
+  "smodd": { "smodlu": 7, "smodld": 6, "smodty": 1, "smoddg": true, "smodva": [0, 0.5, 1, 1.5, 2, 3] },
+  "smodm": null,
+  "skodm": null,
+  "smodf": null,
+  "smodl": null,
+  "smodp": null,
+  "smodcp": { "smodlu": 7.5, "smodld": 4.5, "lcap": 2, "smodbd": false, "smodmd": false, "smodva": [-0.5, -0.5, -0.5, 0, 0.5, 0.5, 0.5] },
+  "version": "v3"
+ },
+ "formazione": {
+  "hlnp": false, "rlnp": false, "fbench": true, "assu": false, "lcap": 2, "lswi": 1, "elnp": 60, "tbench": 12, "count": 4,
+  "mods": ["343", "352", "433", "442", "451", "532", "541"],
+  "brdrs": [0, 0, 0, 0], "bseq": null, "version": "v3"
+ }
+}

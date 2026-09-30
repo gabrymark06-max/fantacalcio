@@ -1,4 +1,4 @@
-import { REGOLE_STANDARD, TUTTI_I_MODULI, type Regole } from "./rules.ts";
+import { REGOLE_STANDARD, TUTTI_I_MODULI, type Fascia, type Regole } from "./rules.ts";
 import type { Giocatore, Ruolo } from "./types.ts";
 
 /*
@@ -8,16 +8,22 @@ import type { Giocatore, Ruolo } from "./types.ts";
  * legge l'API interna del sito e passa i dati a Chi Schiero nel frammento dell'URL
  * (#importa=...): il frammento non viene mai inviato a nessun server.
  *
- * Significato dei campi, da fantabot (github.com/SilvioBaratto/fantabot, MIT),
- * docs/leghe-api.md e domain/lineup/scoring.py, verificati là sulle partite calcolate:
- *   - league/teams: `cal` = id dei giocatori della rosa separati da ";", `cs` = crediti pagati;
- *   - settings/calculate → bnMls: bmgs gol, bmass/bmasf/bmasg assist, bmyc ammonizione,
- *     bmrc espulsione, bmog autorete, bmpsc rigore segnato, bmpns rigore sbagliato,
- *     bmpsa rigore parato, bmgc gol subito, bmcsh imbattibilità del portiere,
- *     motm player of the match, bmdg gol decisivo. Ogni valore è una coppia [x, y] di cui
- *     non si conosce il significato: se le due metà sono uguali non importa.
- *   - custom-roles: ruoli cambiati dalla lega, 1..4 = P, D, C, A.
- * I campi dei modificatori (smod*, stbdf) non sono ancora decifrati: vengono mostrati grezzi.
+ * Campi di settings/calculate (nomi da fantabot, github.com/SilvioBaratto/fantabot, MIT;
+ * formato verificato su una lega Classic reale, settembre 2026):
+ *   - `count`: numero di ruoli (4 nel Classic). Ogni voce di `bnMls` è una lista con un valore
+ *     per ruolo, nell'ordine P, D, C, A (es. bmgs [5, 3, 3, 3] = gol del portiere +5);
+ *     `bmcsh` può essere un numero singolo;
+ *   - bnMls: bmgs gol, bmass/bmasf/bmasg assist, bmyc ammonizione, bmrc espulsione, bmog
+ *     autorete, bmpsc rigore segnato, bmpns rigore sbagliato, bmpsa rigore parato, bmgc gol
+ *     subito, bmcsh imbattibilità del portiere, motm player of the match, bmdg gol decisivo,
+ *     bmeg gol del pareggio;
+ *   - smodd, modificatore difesa: fasce da `smodld` a `smodlu`; `smodva` ha un valore per
+ *     "sotto la prima soglia", uno per ogni fascia intermedia e uno per "da smodlu in su".
+ *     Con smodld 6, smodlu 7 e 6 valori le soglie sono 6; 6,25; 6,5; 6,75; 7;
+ *   - custom-roles: ruoli cambiati dalla lega, 1..4 = P, D, C, A;
+ *   - settings/lineup → mods: moduli ammessi ("343", "352", ...).
+ * Non modellati (segnalati all'utente): gol decisivo e del pareggio, modificatore capitano e
+ * gli altri modificatori (smodg, smodm, smodf, ...).
  */
 
 export interface SquadraLeghe {
@@ -65,26 +71,44 @@ export interface Nota {
   testo: string;
 }
 
-/** Valore di un campo bnMls: numero, o coppia con le due metà uguali. */
-function peso(bn: Record<string, unknown>, chiave: string): { valore: number; dubbio: boolean } | null {
+const ORDINE_RUOLI: Ruolo[] = ["P", "D", "C", "A"];
+const fmt = (x: number) => String(x).replace(".", ",");
+const conSegno = (x: number) => (x > 0 ? `+${fmt(x)}` : fmt(x));
+
+/**
+ * Valore di una voce bnMls per ruolo. Formati visti:
+ *   - numero singolo → uguale per tutti i ruoli;
+ *   - lista lunga quanto `count` (4) → un valore per ruolo, ordine P, D, C, A;
+ *   - coppia (altre leghe, significato ignoto) → se diversa, si usa il primo e si segnala.
+ */
+function perRuolo(bn: Record<string, unknown>, chiave: string, ruoli: number): { valori: Record<Ruolo, number>; ignoto: boolean } | null {
   const v = bn[chiave];
-  if (typeof v === "number") return { valore: v, dubbio: false };
-  if (Array.isArray(v) && v.length > 0 && v.every((x) => typeof x === "number")) {
-    const nums = v as number[];
-    return { valore: nums[0], dubbio: new Set(nums).size > 1 };
+  const uguale = (x: number) => ({ valori: { P: x, D: x, C: x, A: x }, ignoto: false });
+  if (typeof v === "number") return uguale(v);
+  if (!Array.isArray(v) || v.length === 0 || !v.every((x) => typeof x === "number")) return null;
+  const nums = v as number[];
+  if (nums.length === ruoli && ruoli === 4) {
+    return { valori: { P: nums[0], D: nums[1], C: nums[2], A: nums[3] }, ignoto: false };
   }
-  return null;
+  return { ...uguale(nums[0]), ignoto: new Set(nums).size > 1 };
 }
 
-const CAMPI_BONUS: { chiave: string; campo: keyof Regole; nome: string }[] = [
+const tuttiUguali = (r: Record<Ruolo, number>) => new Set(ORDINE_RUOLI.map((x) => r[x])).size === 1;
+const descriviPerRuolo = (r: Record<Ruolo, number>) => ORDINE_RUOLI.map((x) => `${x} ${conSegno(r[x])}`).join(", ");
+
+/**
+ * Voci che nel nostro modello hanno un solo valore. Se la lega le differenzia per ruolo si usa
+ * il ruolo che conta di più per quella voce (il portiere per gol subiti e rigori parati).
+ */
+const CAMPI_SEMPLICI: { chiave: string; campo: keyof Regole; nome: string; ruolo?: Ruolo }[] = [
   { chiave: "bmpsc", campo: "rigoreSegnato", nome: "rigore segnato" },
   { chiave: "bmyc", campo: "ammonizione", nome: "ammonizione" },
   { chiave: "bmrc", campo: "espulsione", nome: "espulsione" },
   { chiave: "bmog", campo: "autorete", nome: "autorete" },
   { chiave: "bmpns", campo: "rigoreSbagliato", nome: "rigore sbagliato" },
-  { chiave: "bmpsa", campo: "rigoreParato", nome: "rigore parato" },
-  { chiave: "bmgc", campo: "golSubito", nome: "gol subito" },
-  { chiave: "bmcsh", campo: "imbattibilita", nome: "imbattibilità del portiere" },
+  { chiave: "bmpsa", campo: "rigoreParato", nome: "rigore parato", ruolo: "P" },
+  { chiave: "bmgc", campo: "golSubito", nome: "gol subito", ruolo: "P" },
+  { chiave: "bmcsh", campo: "imbattibilita", nome: "imbattibilità del portiere", ruolo: "P" },
   { chiave: "motm", campo: "playerOfTheMatch", nome: "player of the match" },
 ];
 
@@ -106,37 +130,85 @@ export function moduliDaLeghe(formazione: Record<string, unknown> | null): strin
   return trovati.size ? TUTTI_I_MODULI.filter((m) => trovati.has(m)) : null;
 }
 
+/**
+ * Fasce del modificatore difesa da smodd: soglie equidistanti da smodld a smodlu, un valore
+ * sotto la prima soglia (se non è zero diventa una fascia "da 0") e uno per ogni soglia.
+ */
+export function fasceDaSmodd(smodd: Record<string, unknown>): Fascia[] | null {
+  const da = Number(smodd.smodld);
+  const a = Number(smodd.smodlu);
+  const valori = smodd.smodva;
+  if (!Number.isFinite(da) || !Number.isFinite(a) || !Array.isArray(valori) || valori.length < 3) return null;
+  const nums = valori.map(Number);
+  if (nums.some((x) => !Number.isFinite(x)) || a <= da) return null;
+  const passo = (a - da) / (nums.length - 2);
+  const fasce: Fascia[] = nums.slice(1).map((bonus, i) => ({ da: Math.round((da + i * passo) * 100) / 100, bonus }));
+  if (nums[0] !== 0) fasce.unshift({ da: 0, bonus: nums[0] });
+  return fasce;
+}
+
+const MODIFICATORI_NON_GESTITI: Record<string, string> = {
+  smodcp: "modificatore capitano",
+  smodg: "modificatore portiere",
+  smodm: "modificatore centrocampo",
+  smodf: "modificatore attacco",
+  smodl: "modificatore modulo",
+  smodp: "fattore rendimento",
+  skodm: "modificatore",
+};
+
 /** Traduce le impostazioni di calcolo nelle nostre regole, dicendo cosa è certo e cosa no. */
 export function regoleDaLeghe(imp: DatiLeghe["impostazioni"], base: Regole = REGOLE_STANDARD): { regole: Regole; note: Nota[] } {
   const note: Nota[] = [];
   const regole: Regole = structuredClone(base);
-  const bn = (imp.calcolo?.bnMls ?? null) as Record<string, unknown> | null;
+  const calcolo = imp.calcolo;
+  const bn = (calcolo?.bnMls ?? null) as Record<string, unknown> | null;
+  const ruoli = Number(calcolo?.count) || 4;
 
   if (!bn) {
     note.push({ tipo: "controlla", testo: "Tabella bonus e malus non trovata: restano le regole standard, controllale qui sotto." });
   } else {
-    const gol = peso(bn, "bmgs");
+    const gol = perRuolo(bn, "bmgs", ruoli);
     if (gol) {
-      regole.gol = { P: gol.valore, D: gol.valore, C: gol.valore, A: gol.valore };
-      if (gol.dubbio) note.push({ tipo: "controlla", testo: `Bonus gol con due valori (${JSON.stringify(bn.bmgs)}): usato il primo, controlla se varia per ruolo.` });
+      regole.gol = gol.valori;
+      if (gol.ignoto) note.push({ tipo: "controlla", testo: `Bonus gol in un formato che non conosciamo (${JSON.stringify(bn.bmgs)}): usato il primo valore.` });
+      else if (!tuttiUguali(gol.valori)) note.push({ tipo: "ok", testo: `Bonus gol per ruolo: ${descriviPerRuolo(gol.valori)}.` });
     }
-    const assist = ["bmass", "bmasf", "bmasg"].map((k) => peso(bn, k)).filter((x): x is { valore: number; dubbio: boolean } => x !== null);
+
+    // tre tipi di assist (in movimento, da fermo, ...): il modello ne ha uno solo
+    const assist = ["bmass", "bmasf", "bmasg"]
+      .map((k) => perRuolo(bn, k, ruoli))
+      .filter((x): x is NonNullable<typeof x> => x !== null)
+      .flatMap((x) => ORDINE_RUOLI.filter((r) => r !== "P").map((r) => x.valori[r]));
     if (assist.length) {
-      const valori = [...new Set(assist.map((a) => a.valore))];
-      regole.assist = valori.reduce((s, v) => s + v, 0) / valori.length;
-      if (valori.length > 1) {
-        note.push({ tipo: "controlla", testo: `La lega distingue i tipi di assist (${valori.join(" / ")}): usata la media, ${regole.assist}.` });
+      const diversi = [...new Set(assist)];
+      regole.assist = diversi.reduce((s, v) => s + v, 0) / diversi.length;
+      if (diversi.length > 1) {
+        note.push({ tipo: "controlla", testo: `La lega dà valori diversi agli assist (${diversi.map(conSegno).join(" / ")}): usata la media, ${conSegno(regole.assist)}.` });
       }
     }
-    for (const c of CAMPI_BONUS) {
-      const p = peso(bn, c.chiave);
+
+    for (const c of CAMPI_SEMPLICI) {
+      const p = perRuolo(bn, c.chiave, ruoli);
       if (!p) continue;
-      (regole[c.campo] as number) = p.valore;
-      if (p.dubbio) note.push({ tipo: "controlla", testo: `Il ${c.nome} ha due valori (${JSON.stringify(bn[c.chiave])}): usato il primo.` });
+      const valore = c.ruolo ? p.valori[c.ruolo] : p.valori.A;
+      (regole[c.campo] as number) = valore;
+      if (p.ignoto) note.push({ tipo: "controlla", testo: `Il ${c.nome} è in un formato che non conosciamo (${JSON.stringify(bn[c.chiave])}): usato il primo valore.` });
+      else if (!c.ruolo && !tuttiUguali(p.valori)) {
+        note.push({ tipo: "controlla", testo: `Il ${c.nome} cambia per ruolo (${descriviPerRuolo(p.valori)}): usato ${conSegno(valore)} per tutti.` });
+      }
     }
-    const decisivo = peso(bn, "bmdg");
-    if (decisivo && decisivo.valore !== 0) {
-      note.push({ tipo: "controlla", testo: `La lega dà ${decisivo.valore} per il gol decisivo: non lo prevediamo (i dati storici non lo registrano).` });
+
+    const nonPrevisti: string[] = [];
+    for (const [chiave, nome] of [["bmdg", "gol decisivo"], ["bmeg", "gol del pareggio"]]) {
+      const p = perRuolo(bn, chiave, ruoli);
+      if (p && ORDINE_RUOLI.some((r) => p.valori[r] !== 0)) nonPrevisti.push(`${nome} ${conSegno(p.valori.A)}`);
+    }
+    if (nonPrevisti.length) {
+      note.push({
+        tipo: "controlla",
+        testo: `Bonus che non possiamo prevedere (i voti storici non dicono quali gol sono decisivi): ${nonPrevisti.join(", ")}. Premiano comunque chi segna, cioè gli stessi giocatori che il modello già valuta per i gol: per questo li trascuriamo.`,
+      });
     }
     note.push({ tipo: "ok", testo: "Bonus e malus importati dalla lega." });
   }
@@ -149,21 +221,35 @@ export function regoleDaLeghe(imp: DatiLeghe["impostazioni"], base: Regole = REG
     note.push({ tipo: "controlla", testo: "Moduli ammessi non riconosciuti: restano tutti, controllali qui sotto." });
   }
 
-  const modificatori = campiModificatori(imp.calcolo);
-  if (modificatori.length) {
+  const smodd = calcolo?.smodd as Record<string, unknown> | null | undefined;
+  if (smodd) {
+    const fasce = fasceDaSmodd(smodd);
+    if (fasce) {
+      regole.modificatoreDifesa = { ...regole.modificatoreDifesa, attivo: true, fasce, migliori: 3, conPortiere: true };
+      note.push({
+        tipo: "ok",
+        testo: `Modificatore difesa attivo: ${fasce.map((f) => `da ${fmt(f.da)} ${conSegno(f.bonus)}`).join(", ")}. Media di portiere e 3 migliori difensori: se nella tua lega è diversa, cambiala qui sotto.`,
+      });
+    } else {
+      note.push({ tipo: "controlla", testo: "Il modificatore difesa è attivo ma le sue fasce non si leggono: impostale qui sotto." });
+    }
+  }
+
+  const altri = campiModificatori(calcolo).filter((k) => k !== "smodd" && k !== "stbdf");
+  if (altri.length) {
     note.push({
       tipo: "controlla",
-      testo: `La lega ha impostazioni di modificatori (${modificatori.join(", ")}) che non sappiamo ancora leggere: attiva e regola il modificatore difesa qui sotto.`,
+      testo: `Non ancora calcolati: ${altri.map((k) => MODIFICATORI_NON_GESTITI[k] ?? k).join(", ")}.`,
     });
   }
   return { regole, note };
 }
 
-/** Campi dei modificatori non vuoti nelle impostazioni di calcolo. */
+/** Modificatori presenti (non vuoti) nelle impostazioni di calcolo. */
 export function campiModificatori(calcolo: Record<string, unknown> | null): string[] {
   if (!calcolo) return [];
   return Object.entries(calcolo)
-    .filter(([k, v]) => (k.startsWith("smod") || k === "stbdf") && v !== null && v !== false && v !== 0 && v !== "")
+    .filter(([k, v]) => (k.startsWith("smod") || k.startsWith("skod") || k === "stbdf") && v !== null && v !== false && v !== 0 && v !== "")
     .map(([k]) => k);
 }
 
