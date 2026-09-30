@@ -54,6 +54,8 @@ test("con le probabili di SOS: il loro modulo e il loro ordine, panchina senza i
   assert.equal(f.fonte, "sos");
   assert.deepEqual(f.linee.map((l) => l.length), [1, 4, 2, 3, 1]);
   assert.equal(f.linee[4][0], r[13]);
+  // ogni reparto da sinistra a destra: SOS elenca da destra a sinistra
+  assert.deepEqual(f.linee[1], [r[5], r[4], r[3], r[2]]);
   assert.ok(!f.panchina.includes(r[6]));
   assert.equal(f.ballottaggi[0].b, r[14]);
   assert.equal(f.indisponibili[1].g.nome, "Sconosciuto");

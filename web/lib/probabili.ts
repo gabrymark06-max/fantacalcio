@@ -25,6 +25,8 @@ export interface LatoProbabile {
 
 export interface PartitaProbabile {
   moduli: { casa: string | null; trasferta: string | null };
+  /** Loghi delle squadre (solo sul proprio PC, con le probabili). */
+  loghi?: { casa: string | null; trasferta: string | null };
   lati: { casa: LatoProbabile; trasferta: LatoProbabile };
 }
 
@@ -44,7 +46,10 @@ export interface Indisponibile {
 export interface FormazioneSquadra {
   squadra: string;
   modulo: string;
-  /** Dal portiere all'attacco: una riga per reparto del modulo (4-2-3-1 → 1, 4, 2, 3, 1). */
+  /**
+   * Dal portiere all'attacco: una riga per reparto del modulo (4-2-3-1 → 1, 4, 2, 3, 1),
+   * ognuna da sinistra a destra guardando la squadra che attacca verso l'alto.
+   */
   linee: Giocatore[][];
   titolari: Giocatore[];
   panchina: Giocatore[];
@@ -104,7 +109,8 @@ export function formazioneSquadra(
   let linee: Giocatore[][];
   let moduloUsato: string;
   if (sosValida) {
-    linee = spezza(titolariSos as Giocatore[], righe!);
+    // SOS Fanta elenca ogni reparto da destra a sinistra (Dimarco, esterno sinistro, per ultimo)
+    linee = spezza(titolariSos as Giocatore[], righe!).map((l) => [...l].reverse());
     moduloUsato = modulo!;
   } else {
     const m = formazioneDalModello(rosa);

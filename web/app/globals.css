@@ -1997,3 +1997,54 @@ button.carta-scambio[aria-pressed="true"] {
     width: 3.9rem;
   }
 }
+
+/* Loghi delle squadre (sul proprio PC); altrove la sigla nei colori sociali */
+.logo-squadra {
+  flex: none;
+  width: 2.2rem;
+  height: 2.2rem;
+  object-fit: contain;
+}
+
+.logo-squadra.grande {
+  width: 3.6rem;
+  height: 3.6rem;
+}
+
+.riquadro-vuoto {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--inchiostro-2);
+}
+
+/* Campi, ballottaggi e indisponibili delle due squadre sulle stesse righe della griglia:
+   i campi hanno la stessa altezza e i riquadri sotto partono allo stesso livello. */
+@media (min-width: 64.01rem) {
+  .tavolo-partita {
+    grid-template-rows: auto auto 1fr;
+    align-items: stretch;
+  }
+  .colonna-partita {
+    display: contents;
+  }
+  .colonna-casa > * { grid-column: 1; }
+  .colonna-trasferta > * { grid-column: 3; }
+  .confronto {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+  }
+  .campo-partita { grid-row: 1; }
+  .riquadro-ballottaggi { grid-row: 2; }
+  .riquadro-indisponibili {
+    grid-row: 3;
+    align-self: start;
+  }
+  /* righe del modulo distribuite su tutta l'altezza del campo */
+  .campo-partita {
+    grid-auto-rows: 1fr;
+    align-content: stretch;
+  }
+  .campo-partita .mini-linea {
+    align-items: center;
+  }
+}

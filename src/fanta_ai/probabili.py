@@ -45,7 +45,7 @@ def collega_partita(p: dict, listone: pd.DataFrame) -> dict:
             ],
             "indisponibili": [{"id": g(x["nome"]), "nome": x["nome"], "stato": x["stato"], "nota": x["nota"]} for x in d["indisponibili"]],
         }
-    return {"moduli": p["moduli"], "lati": lati}
+    return {"moduli": p["moduli"], "loghi": p.get("loghi", {}), "lati": lati}
 
 
 def main() -> None:

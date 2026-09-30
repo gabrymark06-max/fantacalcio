@@ -102,6 +102,7 @@ def parse_probabili(page: str) -> list[dict]:
         if len(squadre) < 2:
             continue
         moduli = [s.get_text(strip=True) for s in testata.select("span.text-primary")]
+        loghi = [img.get("src") for img in testata.find_all("img")]
         lati: list[dict] = [{"titolari": [], "ballottaggi": [], "panchina": [], "indisponibili": []} for _ in range(2)]
         for sezione in art.find_all("section"):
             titolo = sezione.find("h3")
@@ -129,6 +130,7 @@ def parse_probabili(page: str) -> list[dict]:
             "casa": canonical(squadre[0]),
             "trasferta": canonical(squadre[1]),
             "moduli": {"casa": moduli[0] if moduli else None, "trasferta": moduli[1] if len(moduli) > 1 else None},
+            "loghi": {"casa": loghi[0] if loghi else None, "trasferta": loghi[1] if len(loghi) > 1 else None},
             "lati": {"casa": lati[0], "trasferta": lati[1]},
         })
     return partite

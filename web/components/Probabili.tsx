@@ -27,8 +27,16 @@ function tono(g: Giocatore): string {
   return g.fv_atteso >= 7 ? "alto" : g.fv_atteso >= 6.3 ? "medio" : "basso";
 }
 
-function Distintivo({ squadra, grande = false }: { squadra: string; grande?: boolean }) {
+/** Logo della squadra se c'è (sul proprio PC, da SOS Fanta), altrimenti sigla nei colori sociali. */
+function Distintivo({ squadra, logo, grande = false }: { squadra: string; logo?: string | null; grande?: boolean }) {
+  const [errore, setErrore] = useState(false);
   const [sfondo, testo] = COLORI[squadra] ?? ["#52607a", "#ffffff"];
+  if (logo && !errore) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- immagine esterna, niente ottimizzazione
+      <img className={`logo-squadra${grande ? " grande" : ""}`} src={logo} alt="" onError={() => setErrore(true)} />
+    );
+  }
   return (
     <span className={`distintivo${grande ? " grande" : ""}`} style={{ background: sfondo, color: testo }} aria-hidden="true">
       {sigla(squadra)}
@@ -39,6 +47,15 @@ function Distintivo({ squadra, grande = false }: { squadra: string; grande?: boo
 export function Probabili({ partite, giocatori, probabili }: Props) {
   const [scelta, setScelta] = useState(0);
   const perId = useMemo(() => new Map(giocatori.map((g) => [g.id, g])), [giocatori]);
+  const loghi = useMemo(() => {
+    const out: Record<string, string> = {};
+    for (const [chiave, x] of Object.entries(probabili)) {
+      const [c, t] = chiave.split("-");
+      if (x.loghi?.casa) out[c] = x.loghi.casa;
+      if (x.loghi?.trasferta) out[t] = x.loghi.trasferta;
+    }
+    return out;
+  }, [probabili]);
   const p = partite[scelta];
   const sos = probabili[`${p.casa}-${p.trasferta}`];
   const [casa, trasferta] = useMemo(() => {
@@ -59,8 +76,8 @@ export function Probabili({ partite, giocatori, probabili }: Props) {
           <li key={`${x.casa}-${x.trasferta}`}>
             <button type="button" aria-pressed={i === scelta} onClick={() => setScelta(i)} aria-label={`${x.casa} – ${x.trasferta}`}>
               <span className="coppia">
-                <Distintivo squadra={x.casa} />
-                <Distintivo squadra={x.trasferta} />
+                <Distintivo squadra={x.casa} logo={loghi[x.casa]} />
+                <Distintivo squadra={x.trasferta} logo={loghi[x.trasferta]} />
               </span>
               <span className="striscia-quando">
                 {data(x.data).replace(/ \w+$/, "")} {x.ora}
@@ -72,7 +89,7 @@ export function Probabili({ partite, giocatori, probabili }: Props) {
 
       <header className="testata-partita">
         <div className="squadra-partita">
-          <Distintivo squadra={p.casa} grande />
+          <Distintivo squadra={p.casa} logo={loghi[p.casa]} grande />
           <span>
             <strong>{p.casa}</strong>
             <span className="modulo-partita">{casa?.modulo}</span>
@@ -91,7 +108,7 @@ export function Probabili({ partite, giocatori, probabili }: Props) {
             <strong>{p.trasferta}</strong>
             <span className="modulo-partita">{trasferta?.modulo}</span>
           </span>
-          <Distintivo squadra={p.trasferta} grande />
+          <Distintivo squadra={p.trasferta} logo={loghi[p.trasferta]} grande />
         </div>
       </header>
 
@@ -140,9 +157,11 @@ function ColonnaSquadra({ f, lato }: { f: FormazioneSquadra; lato: "casa" | "tra
           </ol>
         ))}
       </div>
-      {f.ballottaggi.length > 0 && (
-        <section className="riquadro" aria-label={`Ballottaggi ${f.squadra}`}>
-          <h3>Ballottaggi</h3>
+      <section className="riquadro riquadro-ballottaggi" aria-label={`Ballottaggi ${f.squadra}`}>
+        <h3>Ballottaggi</h3>
+        {f.ballottaggi.length === 0 ? (
+          <p className="riquadro-vuoto">{f.fonte === "sos" ? "Nessun ballottaggio." : "Disponibili con le probabili formazioni."}</p>
+        ) : (
           <ul className="ballottaggi">
             {f.ballottaggi.map((b, i) => (
               <li key={i}>
@@ -162,11 +181,13 @@ function ColonnaSquadra({ f, lato }: { f: FormazioneSquadra; lato: "casa" | "tra
               </li>
             ))}
           </ul>
-        </section>
-      )}
-      {f.indisponibili.length > 0 && (
-        <section className="riquadro" aria-label={`Indisponibili ${f.squadra}`}>
-          <h3>Indisponibili</h3>
+        )}
+      </section>
+      <section className="riquadro riquadro-indisponibili" aria-label={`Indisponibili ${f.squadra}`}>
+        <h3>Indisponibili</h3>
+        {f.indisponibili.length === 0 ? (
+          <p className="riquadro-vuoto">{f.fonte === "sos" ? "Nessun indisponibile." : "Disponibili con le probabili formazioni."}</p>
+        ) : (
           <ul className="indisponibili">
             {f.indisponibili.map((x, i) => (
               <li key={i}>
@@ -179,8 +200,8 @@ function ColonnaSquadra({ f, lato }: { f: FormazioneSquadra; lato: "casa" | "tra
               </li>
             ))}
           </ul>
-        </section>
-      )}
+        )}
+      </section>
     </div>
   );
 }
