@@ -1,7 +1,5 @@
-# Le probabili formazioni e le note di SOS Fanta restano solo sul proprio PC: sul sito
-# pubblicato scripts/file-locali.mjs crea un file vuoto e le formazioni si stimano dal modello.
-# Foto di Transfermarkt (foto-personali.json) e loghi (loghi.json) invece vengono pubblicati.
-data/probabili.json
+# Foto di Transfermarkt, loghi e probabili formazioni di SOS Fanta sono esclusi da git ma
+# vengono pubblicati su Vercel (i diritti restano dei proprietari). Qui solo ciò che non serve.
 .next
 node_modules
 .env*

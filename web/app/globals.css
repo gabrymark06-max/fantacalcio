@@ -2483,3 +2483,104 @@ button.carta-scambio[aria-pressed="true"] {
     order: -1;
   }
 }
+
+/* ---------- Da sapere: schede con il numero chiave ---------- */
+
+.schede-sapere {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.sapere {
+  --accento: var(--riga);
+  display: grid;
+  grid-template-columns: 4.6rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.6rem;
+  background: var(--carta);
+  border-left: 4px solid var(--accento);
+}
+
+.sapere-esito { --accento: var(--ruolo-d); }
+.sapere-gol { --accento: var(--ruolo-a); }
+.sapere-risultato { --accento: var(--ruolo-c); }
+.sapere-porta { --accento: var(--ruolo-p); }
+.sapere-marcatore { --accento: var(--ruolo-a); }
+.sapere-ballottaggi { --accento: var(--evidenziatore); }
+.sapere-forma { --accento: var(--inchiostro-2); }
+
+.sapere-segno {
+  display: grid;
+  justify-items: center;
+}
+
+.sapere-valore {
+  font-family: var(--font-titolo);
+  font-weight: 800;
+  font-size: 1.7rem;
+  line-height: 1;
+  color: var(--inchiostro);
+}
+
+.sapere-valore.sopra-foto {
+  position: absolute;
+  left: 50%;
+  bottom: -0.45rem;
+  transform: translateX(-50%);
+  padding: 0.05rem 0.35rem;
+  border-radius: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--su-giallo);
+  background: var(--evidenziatore);
+  white-space: nowrap;
+}
+
+.sapere-segno .pallini-forma li {
+  width: 0.85rem;
+  height: 1.3rem;
+  font-size: 0.6rem;
+}
+
+.sapere-testo {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+  font-size: 0.85rem;
+  line-height: 1.35;
+}
+
+.sapere-testo strong {
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.sapere-testo > span:last-child {
+  color: var(--inchiostro-2);
+}
+
+.sapere-tipo {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--inchiostro-2);
+}
+
+.sapere-tipo .logo-squadra,
+.sapere-tipo .distintivo {
+  width: 1.1rem;
+  height: 1.1rem;
+  font-size: 0.45rem;
+}
+
+.sapere-testo strong::first-letter {
+  text-transform: uppercase;
+}

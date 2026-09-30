@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { Faccia, LineeCampo } from "@/components/Campo";
 import { data, pct, voto } from "@/lib/format";
 import { COLORI, formazioneSquadra, sigla, type FormazioneSquadra, type Nominato, type PartitaProbabile } from "@/lib/probabili";
-import { frasi, migliori, pAssist, pCartellino, pGol, pronostico, riassuntoForma, type Evidenza, type Pronostico } from "@/lib/pronostico";
+import { daSapere, migliori, pAssist, pCartellino, pGol, pronostico, riassuntoForma, type DaSapere, type Evidenza, type Pronostico } from "@/lib/pronostico";
 import type { Forma, Giocatore, Partita } from "@/lib/types";
 
 /*
@@ -125,7 +125,7 @@ export function Probabili({ partite, giocatori, probabili, loghi: loghiSquadre }
             <RiquadroForma p={p} loghi={loghi} />
           </div>
           <ColonnaSquadra f={trasferta} lato="trasferta">
-            <RiquadroDaSapere testi={frasi(p, pronostico(p), casa, trasferta)} />
+            <RiquadroDaSapere schede={daSapere(p, pronostico(p), casa, trasferta)} loghi={loghi} />
             <RiquadroGiocatori
               classe="riquadro-riga5"
               titolo="Assist e cartellini"
@@ -395,13 +395,51 @@ function RiquadroForma({ p, loghi }: { p: Partita; loghi: Record<string, string>
   );
 }
 
-function RiquadroDaSapere({ testi }: { testi: string[] }) {
+/** Etichetta di ogni tipo di scheda, sopra il titolo. */
+const TIPI: Record<DaSapere["tipo"], string> = {
+  esito: "Esito",
+  gol: "Gol",
+  risultato: "Risultato",
+  porta: "Porta inviolata",
+  marcatore: "Marcatore",
+  ballottaggi: "Formazione",
+  forma: "Forma",
+};
+
+function RiquadroDaSapere({ schede, loghi }: { schede: DaSapere[]; loghi: Record<string, string> }) {
   return (
     <section className="riquadro riquadro-riga4" aria-label="Da sapere">
       <h3>Da sapere</h3>
-      <ul className="da-sapere">
-        {testi.map((t) => (
-          <li key={t}>{t}</li>
+      <ul className="schede-sapere">
+        {schede.map((x) => (
+          <li key={x.tipo + x.titolo} className={`sapere sapere-${x.tipo}`}>
+            <span className="sapere-segno">
+              {x.giocatore ? (
+                <span className="gettone-foto">
+                  <Faccia g={x.giocatore} taglia="media" />
+                  <span className="sapere-valore sopra-foto">{x.valore}</span>
+                </span>
+              ) : x.tipo === "forma" && /^[VNP]+$/.test(x.valore) ? (
+                <ol className="pallini-forma" aria-label="Ultime partite, dalla più recente">
+                  {[...x.valore].map((e, i) => (
+                    <li key={i} className={`forma-${e}`}>
+                      {e}
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <span className="sapere-valore">{x.valore}</span>
+              )}
+            </span>
+            <span className="sapere-testo">
+              <span className="sapere-tipo">
+                {x.squadra && loghi[x.squadra] && <Distintivo squadra={x.squadra} logo={loghi[x.squadra]} />}
+                {TIPI[x.tipo]}
+              </span>
+              <strong>{x.titolo}</strong>
+              <span>{x.testo}</span>
+            </span>
+          </li>
         ))}
       </ul>
     </section>

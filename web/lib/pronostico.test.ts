@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { frasi, pGol, pronostico, riassuntoForma } from "./pronostico.ts";
+import { daSapere, pGol, pronostico, riassuntoForma } from "./pronostico.ts";
 import type { Giocatore, Partita } from "./types.ts";
 
 const partita = (xgC: number, xgT: number, p1: number, px: number, p2: number): Partita => ({
@@ -25,12 +25,19 @@ test("pronostico: probabilità coerenti con i gol attesi", () => {
   assert.deepEqual([pr.risultati[0].casa, pr.risultati[0].trasferta], [1, 0]);
 });
 
-test("frasi: favorita, gol, forma", () => {
+test("da sapere: favorita, gol, risultato, forma", () => {
   const p = partita(2.9, 0.6, 0.85, 0.11, 0.04);
-  const testo = frasi(p, pronostico(p), null, null).join(" | ");
-  assert.match(testo, /Inter favorita: vince nel 85%/);
-  assert.match(testo, /Partita da gol/);
-  assert.match(testo, /Inter nelle ultime 2: 1 vittoria, 1 pareggio, 4 gol fatti e 2 subiti/);
+  p.forma_trasferta = [
+    { esito: "P", fatti: 0, subiti: 2, avversario: "Roma", casa: true, data: "2026-09-27" },
+    { esito: "N", fatti: 1, subiti: 1, avversario: "Milan", casa: false, data: "2026-09-20" },
+    { esito: "P", fatti: 0, subiti: 3, avversario: "Lazio", casa: true, data: "2026-09-13" },
+  ];
+  const schede = daSapere(p, pronostico(p), null, null);
+  const di = (tipo: string) => schede.find((x) => x.tipo === tipo)!;
+  assert.deepEqual([di("esito").valore, di("esito").titolo], ["85%", "Inter favorita"]);
+  assert.equal(di("gol").titolo, "gol attesi: partita da gol");
+  assert.equal(di("risultato").valore, "2-0");
+  assert.deepEqual([di("forma").titolo, di("forma").valore], ["Parma senza vittorie", "PNP"]);
   assert.deepEqual(riassuntoForma(p.forma_casa!), { vinte: 1, pari: 1, perse: 0, fatti: 4, subiti: 2 });
 });
 

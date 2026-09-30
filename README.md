@@ -101,8 +101,8 @@ titolare (probabilità di giocare e fantavoto atteso del modello), la panchina, 
 indisponibili. Modulo, titolari, ballottaggi e note sugli indisponibili vengono da SOS Fanta
 (`scraping.titolarita` → `data/raw/probabili.json` → `fanta_ai.probabili` →
 `web/data/probabili.json`, passo già incluso nella pipeline). Sono contenuti loro: il file è
-escluso da git e sul sito pubblicato le formazioni sono ricavate dal modello (per ogni reparto
-chi ha la probabilità di giocare più alta).
+escluso da git ma pubblicato su Vercel; se manca, le formazioni sono ricavate dal modello
+(per ogni reparto chi ha la probabilità di giocare più alta).
 
 ## Aggiornamento automatico
 
@@ -120,9 +120,8 @@ I log finiscono in `logs/`.
 
 Il sito è su Vercel (progetto `fantacalcio`, cartella `web` collegata con `vercel link`):
 `cd web && vercel deploy --prod`. `scripts/aggiorna.ps1` lo ripubblica da solo dopo ogni
-aggiornamento. `web/.vercelignore` esclude i file che restano solo sul proprio PC (foto di
-Transfermarkt, probabili formazioni e loghi di SOS Fanta): online le formazioni sono stimate
-dal modello e le foto sono quelle di Wikimedia Commons.
+aggiornamento. Foto di Transfermarkt, loghi e probabili formazioni di SOS Fanta sono esclusi da git ma
+pubblicati su Vercel: i diritti restano dei proprietari.
 
 ## Regole sui dati
 

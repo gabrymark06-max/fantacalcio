@@ -103,48 +103,92 @@ export function riassuntoForma(forma: Forma[]): { vinte: number; pari: number; p
 const pc = (x: number) => `${Math.round(x * 100)}%`;
 const num = (x: number) => x.toFixed(1).replace(".", ",");
 
-function fraseForma(squadra: string, forma: Forma[]): string | null {
-  if (!forma.length) return null;
-  const r = riassuntoForma(forma);
-  const parti = [r.vinte && `${r.vinte} ${r.vinte === 1 ? "vittoria" : "vittorie"}`, r.pari && `${r.pari} ${r.pari === 1 ? "pareggio" : "pareggi"}`, r.perse && `${r.perse} ${r.perse === 1 ? "sconfitta" : "sconfitte"}`].filter(Boolean);
-  return `${squadra} nelle ultime ${forma.length}: ${parti.join(", ")}, ${r.fatti} gol fatti e ${r.subiti} subiti.`;
+/** Una cosa da sapere: il numero chiave in grande, un titolo breve e una riga di spiegazione. */
+export interface DaSapere {
+  tipo: "esito" | "gol" | "risultato" | "porta" | "marcatore" | "ballottaggi" | "forma";
+  valore: string;
+  titolo: string;
+  testo: string;
+  giocatore?: Giocatore;
+  squadra?: string;
 }
 
-/** Le cose da sapere sulla partita, in frasi brevi e in ordine di importanza. */
-export function frasi(p: Partita, pr: Pronostico, casa: FormazioneSquadra | null, trasferta: FormazioneSquadra | null): string[] {
-  const out: string[] = [];
-  const [fav, pFav, altra] = p.p1 >= p.p2 ? [p.casa, p.p1, p.trasferta] : [p.trasferta, p.p2, p.casa];
-  if (pFav >= 0.55) out.push(`${fav} favorita: vince nel ${pc(pFav)} dei casi, il pareggio è al ${pc(p.px)}.`);
-  else if (Math.abs(p.p1 - p.p2) < 0.1) out.push(`Partita equilibrata: ${p.casa} ${pc(p.p1)}, pareggio ${pc(p.px)}, ${p.trasferta} ${pc(p.p2)}.`);
-  else out.push(`Leggermente favorita ${fav} (${pc(pFav)}) su ${altra}, pareggio al ${pc(p.px)}.`);
+/** La frase sulla forma di una squadra, solo se dice qualcosa di netto. */
+function schedaForma(squadra: string, forma: Forma[]): DaSapere | null {
+  if (forma.length < 3) return null;
+  const r = riassuntoForma(forma);
+  const n = forma.length;
+  const serie = forma.map((x) => x.esito).join("");
+  if (r.vinte === 0) return { tipo: "forma", valore: serie, titolo: `${squadra} senza vittorie`, testo: `Nelle ultime ${n}: ${r.fatti} gol fatti e ${r.subiti} subiti.`, squadra };
+  if (r.perse === 0) return { tipo: "forma", valore: serie, titolo: `${squadra} imbattuta`, testo: `${r.vinte} vittorie nelle ultime ${n}, ${r.fatti} gol fatti.`, squadra };
+  if (r.vinte >= n - 1) return { tipo: "forma", valore: serie, titolo: `${squadra} in forma`, testo: `${r.vinte} vittorie nelle ultime ${n}, ${r.fatti} gol fatti e ${r.subiti} subiti.`, squadra };
+  if (r.subiti / n >= 2) return { tipo: "forma", valore: num(r.subiti / n), titolo: `${squadra}: difesa in difficoltà`, testo: `Gol subiti a partita nelle ultime ${n} (${r.subiti} in tutto).`, squadra };
+  if (r.fatti / n >= 2) return { tipo: "forma", valore: num(r.fatti / n), titolo: `${squadra}: attacco in forma`, testo: `Gol fatti a partita nelle ultime ${n} (${r.fatti} in tutto).`, squadra };
+  return null;
+}
 
-  if (pr.over25 >= 0.55) out.push(`Partita da gol: ${num(pr.golAttesi)} gol attesi, più di 2 gol nel ${pc(pr.over25)} dei casi.`);
-  else if (pr.over25 <= 0.45) out.push(`Pochi gol attesi (${num(pr.golAttesi)}): al massimo 2 gol nel ${pc(1 - pr.over25)} dei casi.`);
-  else out.push(`${num(pr.golAttesi)} gol attesi: più o meno di 2 gol è quasi un testa o croce (${pc(pr.over25)} più di 2).`);
+/** Le cose da sapere sulla partita, in ordine di importanza. */
+export function daSapere(p: Partita, pr: Pronostico, casa: FormazioneSquadra | null, trasferta: FormazioneSquadra | null): DaSapere[] {
+  const out: DaSapere[] = [];
+  const [fav, pFav] = p.p1 >= p.p2 ? [p.casa, p.p1] : [p.trasferta, p.p2];
+  const tutte = `${p.casa} ${pc(p.p1)} · pareggio ${pc(p.px)} · ${p.trasferta} ${pc(p.p2)}`;
+  if (pFav >= 0.55) out.push({ tipo: "esito", valore: pc(pFav), titolo: `${fav} favorita`, testo: tutte, squadra: fav });
+  else if (Math.abs(p.p1 - p.p2) < 0.1) out.push({ tipo: "esito", valore: pc(p.px), titolo: "Partita equilibrata: pareggio probabile", testo: tutte });
+  else out.push({ tipo: "esito", valore: pc(pFav), titolo: `${fav} leggermente favorita`, testo: tutte, squadra: fav });
 
-  const [r1] = pr.risultati;
-  out.push(`Il risultato più probabile è ${r1.casa}-${r1.trasferta} (${pc(r1.p)}): anche il più probabile succede raramente.`);
+  out.push({
+    tipo: "gol",
+    valore: num(pr.golAttesi),
+    titolo: pr.over25 >= 0.55 ? "gol attesi: partita da gol" : pr.over25 <= 0.45 ? "gol attesi: partita chiusa" : "gol attesi",
+    testo: pr.over25 >= 0.55 || pr.over25 <= 0.45
+      ? `Più di 2 gol nel ${pc(pr.over25)} dei casi, segnano entrambe nel ${pc(pr.entrambeSegnano)}.`
+      : `Più o meno di 2 gol è un testa o croce: ${pc(pr.over25)} contro ${pc(1 - pr.over25)}.`,
+  });
+
+  const [r1, r2] = pr.risultati;
+  out.push({
+    tipo: "risultato",
+    valore: `${r1.casa}-${r1.trasferta}`,
+    titolo: "il risultato più probabile",
+    testo: `Solo il ${pc(r1.p)} delle volte, poi ${r2.casa}-${r2.trasferta} (${pc(r2.p)}).`,
+  });
 
   const inviolata = pr.portaInviolataCasa >= pr.portaInviolataTrasferta
     ? { squadra: p.casa, p: pr.portaInviolataCasa, f: casa }
     : { squadra: p.trasferta, p: pr.portaInviolataTrasferta, f: trasferta };
   const portiere = inviolata.f?.titolari.find((g) => g.ruolo === "P");
-  if (inviolata.p >= 0.3) {
-    out.push(`Per il fanta: ${portiere ? `${portiere.nome} (${inviolata.squadra})` : inviolata.squadra} ha la porta inviolata più probabile, ${pc(inviolata.p)}.`);
+  if (inviolata.p >= 0.25) {
+    out.push({
+      tipo: "porta",
+      valore: pc(inviolata.p),
+      titolo: portiere ? portiere.nome : inviolata.squadra,
+      testo: `Per il fanta: il portiere con più probabilità di non subire gol (${inviolata.squadra}).`,
+      giocatore: portiere,
+      squadra: inviolata.squadra,
+    });
   }
 
   const titolari = [...(casa?.titolari ?? []), ...(trasferta?.titolari ?? [])];
   const [bomber] = migliori(titolari, pGol, 1);
-  if (bomber) out.push(`Il più probabile marcatore è ${bomber.g.nome} (${bomber.g.squadra}): segna nel ${pc(bomber.p)} dei casi.`);
+  if (bomber) {
+    out.push({
+      tipo: "marcatore",
+      valore: pc(bomber.p),
+      titolo: bomber.g.nome,
+      testo: `Il più probabile marcatore della partita (${bomber.g.squadra}).`,
+      giocatore: bomber.g,
+      squadra: bomber.g.squadra,
+    });
+  }
 
   for (const [squadra, f] of [[p.casa, casa], [p.trasferta, trasferta]] as const) {
     const n = f?.ballottaggi.length ?? 0;
-    if (n >= 3) out.push(`${squadra}: ${n} ballottaggi aperti, formazione ancora incerta.`);
+    if (n >= 3) out.push({ tipo: "ballottaggi", valore: String(n), titolo: `${squadra}: ${n} ballottaggi`, testo: "Formazione ancora incerta: controlla prima di schierare.", squadra });
   }
 
   for (const [squadra, forma] of [[p.casa, p.forma_casa ?? []], [p.trasferta, p.forma_trasferta ?? []]] as const) {
-    const frase = fraseForma(squadra, forma);
-    if (frase) out.push(frase);
+    const scheda = schedaForma(squadra, forma);
+    if (scheda) out.push(scheda);
   }
   return out;
 }
